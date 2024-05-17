@@ -70,7 +70,7 @@ class RST:
             parameterType="Required",
             direction="Input"
         )
-        param_std_pop_yr.filter.list = ["2000", "2010"]
+        param_std_pop_yr.filter.list = ["2000", "2010", "2020"]
 
         param_out_table = arcpy.Parameter(
             displayName="Output Table",
@@ -162,7 +162,7 @@ class RST:
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        # Process parameters
+        # Read in parameters
         data_url = parameters[0].valueAsText
         data_fields = parameters[1].values
         data_region_id = data_group_id = data_event_id = data_pop_id = ""
@@ -178,7 +178,7 @@ class RST:
         feature_region_id = ""
         if feature_fields is not None:
             feature_region_id = feature_fields[0][0].value
-        
+
         std_pop_yr = parameters[4].valueAsText
         estimates_out = parameters[5].valueAsText
         age_std_groups = [
@@ -199,7 +199,7 @@ class RST:
 
         Y = np.array(data[data_event_id]).reshape([num_region, num_group])
         n = np.array(data[data_pop_id]).reshape([num_region, num_group])
-        
+
         # Check if data and feature regions are identical
         feature_regions = pd.DataFrame(data = arcpy.da.SearchCursor(feature_url, [feature_region_id]), columns = [feature_region_id])
         feature_regions = feature_regions[feature_region_id].unique().tolist()
@@ -222,9 +222,9 @@ def autoIncrement(start=1, interval=1):
     else:
         rec += interval
     return rec""",
-            field_type = "LONG",
-            enforce_domains = "NO_ENFORCE_DOMAINS"
-        )
+                    field_type = "LONG",
+                    enforce_domains = "NO_ENFORCE_DOMAINS"
+                )
         arcpy.analysis.PolygonNeighbors(in_features=r"in_memory\feature", out_table=r"in_memory\adjTable", in_fields="NUM_REGION")
         adj_table = arcpy.da.TableToNumPyArray(r"in_memory\adjTable", ("src_NUM_REGION", "nbr_NUM_REGION"))
         adj_table = np.array([*adj_table.astype(object)]) 
@@ -238,18 +238,24 @@ def autoIncrement(start=1, interval=1):
                 adj_dict[source] = [neighbor]
         adj = list(adj_dict.values())
 
+        # Insertion order is not preserved for Python < 3.7
+        adj_srcs = list(adj_dict.keys())
+        adj_srcs.sort()
+        adj = [adj_dict[src] for src in adj_srcs]
+
         # Set up standard population
         # Klein, et al. 2000 standard population
         if (std_pop_yr == "2000"): 
             std_pop = np.array([18987, 39977, 38077, 37233, 44659, 37030, 23961, 18136, 12315, 4259])
         # 2010 standard population
         if (std_pop_yr == "2010"):
-            std_pop = np.array([20203362, 41025851, 43626342, 41063948, 41070606, 45006716, 36482729, 21713429, 13061122, 5493433])
+            std_pop = np.array([20_203_362, 41_025_851, 43_626_342, 41_063_948, 41_070_606, 45_006_716, 36_482_729, 21_713_429, 13_061_122, 5_493_433])
+        if (std_pop_yr == "2020"):
+            std_pop = np.array([18_400_235, 41_758_253, 44_202_275, 44_834_666, 42_184_137, 40_868_806, 43_408_408, 33_111_965, 16_344_101, 6_336_435])
         pop_ages = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
         std_pop = std_pop[np.isin(pop_ages, age_groups)]
 
         # Generate estimates
-        messages.AddMessage("Generating estimates...")
         theta_out = helpers.gibbs_rucar(Y, n, adj, std_pop)
         output = helpers.expit(theta_out) * 1e5
 
@@ -258,12 +264,10 @@ def autoIncrement(start=1, interval=1):
         age_groups.extend(age_std_group_names)
 
         medians = helpers.get_medians(output, regions, age_groups, ci).reset_index()
-        messages.AddMessage("Model finished!")
-
-        # Output feature with joined estimates
         median_fields = medians.columns.tolist()
         median_fields[0] = data_region_id
         medians_np = np.rec.fromrecords(medians.values, names = median_fields)
+
         arcpy.da.NumPyArrayToTable(medians_np, estimates_out)
 
         return
