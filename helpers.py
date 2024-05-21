@@ -77,11 +77,23 @@ def age_std(output, ages, std_pop, wtages):
     output_new = (output[:, np.where(np.isin(ages, wtages))[0], :] * wt).sum(1, keepdims = True)
     return np.concatenate((output, output_new), 1)
 
+# ***MODIFIED*** Now outputs minimum CI for reliable estimates in each region, along with true/false value for reliability. Does not suppress estimates.
 # Calculate medians
-def get_medians(output, regions, ages, ci):
+def get_medians(output, regions, ages):
+    ci_values = [0.5, 0.75, 0.9, 0.95, 0.99]
     medians = pd.DataFrame(np.median(output, 2), regions, ages)
-    alpha = (1 - ci) / 2
-    hi = np.quantile(output, 1 - alpha, 2)
-    lo = np.quantile(output, alpha, 2)
-    rp = medians / (hi - lo)
-    return medians[rp >= 1]
+    ci_chart = np.zeros(medians.shape)
+    for ci in ci_values:
+        alpha = (1 - ci) / 2
+        hi = np.quantile(output, 1 - alpha, 2)
+        lo = np.quantile(output, alpha, 2)
+        rp = medians / (hi - lo)
+        ci_chart[rp >= 1] = ci
+        if ci == 0.95:
+            reliable = pd.DataFrame(rp >= 1, regions, ages)
+    ci_chart = pd.DataFrame(ci_chart, regions, ages)
+    if ages == [""]:
+        medians = medians.rename(columns = {'': "median"})
+        reliable = reliable.rename(columns = {'': "reliable"})
+        ci_chart = ci_chart.rename(columns = {'': "max_reliable_ci"})
+    return [medians, ci_chart, reliable]
