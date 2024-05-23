@@ -283,7 +283,7 @@ class RST:
 
         # Check if age_std_groups contains age groups that the data does not
         flat_age_std_groups = {age_grp for group in age_std_groups_arr for age_grp in group}
-        if not set(flat_age_std_groups).issubset(set(age_groups)):
+        if not flat_age_std_groups.issubset(set(age_groups)):
             raise Exception("Constituent Age Group not present in Input Table")
         
         Y = np.array(data[data_event_id_str]).reshape([num_region, num_group])
@@ -339,6 +339,7 @@ def autoIncrement(start=1, interval=1):
             std_pop = std_pop[np.isin(pop_ages, age_groups)]
 
         # Generate estimates
+        messages.AddMessage("Generating estimates...")
         theta_out = helpers.gibbs_rucar(Y, n, adj, std_pop)
         output = helpers.expit(theta_out) * rates_per
 
@@ -370,6 +371,8 @@ def autoIncrement(start=1, interval=1):
         output_np = np.rec.fromrecords(output, names = output_cols)
 
         arcpy.da.NumPyArrayToTable(output_np, estimates_out.valueAsText)
+    
+        messages.AddMessage("Model finished!")
 
         return
 

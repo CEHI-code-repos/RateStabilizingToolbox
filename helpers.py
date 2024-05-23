@@ -1,3 +1,4 @@
+import arcpy
 import numpy as np
 import pandas as pd
 import json
@@ -54,6 +55,7 @@ def gibbs_rucar(Y, n, adj, std_pop):
     A = Y.sum(0) / n.sum(0) * std_pop
     A = num_group * A / sum(A)
     theta_out = np.zeros([num_region, num_group, 400])
+    arcpy.SetProgressor("step", "Generating estimates...", 0, 6000, 1)
     for s in range(6000):
         sig2 = sample_sig2(beta, Z, tau2, num_island_region, adj, num_adj, num_region, num_group, num_island, sigma_a, sigma_b, m0, A)
         tau2 = sample_tau2(theta, beta, Z, sig2, island_id, num_island_region, num_region, num_group, num_island, tau_a, tau_b, A, m0)
@@ -66,6 +68,7 @@ def gibbs_rucar(Y, n, adj, std_pop):
             theta_acpt *= 0
         if (s > 2000) & ((s + 1) % 10 == 0):
             theta_out[:, :, (s - 2000) // 10] = theta
+        arcpy.SetProgressorPosition()
         print(str(round(s / 6000 * 100, 1)) + "%", end = "\r")
     print()
     return theta_out
