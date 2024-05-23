@@ -210,7 +210,7 @@ class RST:
 
         # Check if Output Table exists
         if estimates_out_exists:
-            estimates_out.setErrorMessage("Output Table already Exists")
+            estimates_out.setErrorMessage("Output Table already exists")
         
         if age_std_groups.valueAsText is not None:
             age_std_groups_dict = {}
@@ -282,8 +282,8 @@ class RST:
             num_group = data[data_ageGrp_id.valueAsText].nunique()
 
         # Check if age_std_groups contains age groups that the data does not
-        flat_age_std_groups = list({age_grp for group in age_std_groups_arr for age_grp in group})
-        if flat_age_std_groups != age_groups:
+        flat_age_std_groups = {age_grp for group in age_std_groups_arr for age_grp in group}
+        if not set(flat_age_std_groups).issubset(set(age_groups)):
             raise Exception("Constituent Age Group not present in Input Table")
         
         Y = np.array(data[data_event_id_str]).reshape([num_region, num_group])
