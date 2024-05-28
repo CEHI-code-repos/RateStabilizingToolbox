@@ -281,39 +281,45 @@ class RST:
             age_groups = data[data_ageGrp_id.valueAsText].unique().tolist()
             num_group = data[data_ageGrp_id.valueAsText].nunique()
 
+        arcpy.AddMessage("Validating arguments ...")
         # Check if age_std_groups contains age groups that the data does not
         flat_age_std_groups = {age_grp for group in age_std_groups_arr for age_grp in group}
         if not flat_age_std_groups.issubset(set(age_groups)):
-            raise Exception("Constituent Age Group not present in Input Table")
-        
-        Y = np.array(data[data_event_id_str]).reshape([num_region, num_group])
-        n = np.array(data[data_pop_id_str]).reshape([num_region, num_group])
+            err = "Constituent Age Group not present in Input Table"
+            arcpy.AddError(err)
+            raise ValueError(err)
 
         # Check if data and feature regions are identical
         feature_regions = pd.DataFrame(data = arcpy.da.SearchCursor(feature_url.valueAsText, [feature_region_id_str]), columns = [feature_region_id_str])
         feature_regions = feature_regions[feature_region_id_str].unique().tolist()
         feature_regions.sort()
         if len(feature_regions) != len(regions) or feature_regions != regions:
-            raise Exception("Input Table and Input Feature do not have an identical regions")
+            err = "Input Table and Input Feature do not have an identical regions"
+            arcpy.AddError(err)
+            raise ValueError(err)
+        
+        Y = np.array(data[data_event_id_str]).reshape([num_region, num_group])
+        n = np.array(data[data_pop_id_str]).reshape([num_region, num_group])
+
+        std_pop = 1
+        # Klein, et al. 2000 standard population
+        if (std_pop_yr.valueAsText == "2000"): 
+            std_pop = np.array([18987, 39977, 38077, 37233, 44659, 37030, 23961, 18136, 12315, 4259])
+        # 2010 standard population
+        if (std_pop_yr.valueAsText == "2010"):
+            std_pop = np.array([20203362, 41025851, 43626342, 41063948, 41070606, 45006716, 36482729, 21713429, 13061122, 5493433])
+        if std_pop_yr.valueAsText is not None:
+            pop_ages = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
+            std_pop = std_pop[np.isin(pop_ages, age_groups)]
 
         # Create adjacency matrix
+        arcpy.AddMessage("Creating adjacency matrix ...")
         arcpy.management.Sort(in_dataset = feature_url.valueAsText, out_dataset = r"in_memory\feature", sort_field = feature_region_id_str + " ASCENDING")
-        arcpy.management.CalculateField(
-            in_table = r"in_memory\feature",
-            field = "NUM_REGION",
-            expression = "autoIncrement()",
-            expression_type = "PYTHON3",
-            code_block = """rec = 0
-def autoIncrement(start=1, interval=1):
-    global rec
-    if rec == 0:
-        rec = start
-    else:
-        rec += interval
-    return rec""",
-                    field_type = "LONG",
-                    enforce_domains = "NO_ENFORCE_DOMAINS"
-        )
+        arcpy.management.AddField(in_table=r"in_memory\feature", field_name="NUM_REGION", field_type="LONG")
+        with arcpy.da.UpdateCursor(r"in_memory\feature", ["NUM_REGION"]) as cursor:
+            for index, row in enumerate(cursor):
+                row[0] = index + 1
+                cursor.updateRow(row)
         arcpy.analysis.PolygonNeighbors(in_features=r"in_memory\feature", out_table=r"in_memory\adjTable", in_fields="NUM_REGION")
         adj_table = arcpy.da.TableToNumPyArray(r"in_memory\adjTable", ("src_NUM_REGION", "nbr_NUM_REGION"))
         adj_table = np.array([*adj_table.astype(object)]) 
@@ -326,17 +332,6 @@ def autoIncrement(start=1, interval=1):
             else:
                 adj_dict[source] = [neighbor]
         adj = list(adj_dict.values())
-
-        std_pop = 1
-        # Klein, et al. 2000 standard population
-        if (std_pop_yr.valueAsText == "2000"): 
-            std_pop = np.array([18987, 39977, 38077, 37233, 44659, 37030, 23961, 18136, 12315, 4259])
-        # 2010 standard population
-        if (std_pop_yr.valueAsText == "2010"):
-            std_pop = np.array([20203362, 41025851, 43626342, 41063948, 41070606, 45006716, 36482729, 21713429, 13061122, 5493433])
-        if std_pop_yr.valueAsText is not None:
-            pop_ages = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
-            std_pop = std_pop[np.isin(pop_ages, age_groups)]
 
         # Generate estimates
         messages.AddMessage("Generating estimates...")
@@ -351,25 +346,23 @@ def autoIncrement(start=1, interval=1):
         
         medians, ci_chart, reliable = helpers.get_medians(output, regions, age_groups)
 
-        # If age standardized, combine output with prefixes
+        # If age standardized, combine output with prefixes, else just rename the output cols
         output = output_cols = []
         if age_std_groups.values is not None:
             medians = medians.add_prefix("median_")
-            ci_chart = ci_chart.add_prefix("ci_")
+            ci_chart = ci_chart.add_prefix("maxCI_")
             reliable = reliable.add_prefix("reliable_")
             output = pd.concat([medians, ci_chart, reliable], axis = 1)
             for i in range(len(medians.columns)):
-                output_cols.append(medians.columns[i])
-                output_cols.append(ci_chart.columns[i])
-                output_cols.append(reliable.columns[i])
+                output_cols.extend([ medians.columns[i], ci_chart.columns[i], reliable.columns[i] ])
             output = output[output_cols].reset_index()
         else:
             output = pd.concat([medians, ci_chart, reliable], axis = 1).reset_index()
-            output_cols = ["median", "ci", "reliable"]
+            output_cols = ["median", "maxCI", "reliable"]
 
+        # Write out the final table
         output_cols = [data_region_id_str] + output_cols
         output_np = np.rec.fromrecords(output, names = output_cols)
-
         arcpy.da.NumPyArrayToTable(output_np, estimates_out.valueAsText)
     
         messages.AddMessage("Model finished!")
