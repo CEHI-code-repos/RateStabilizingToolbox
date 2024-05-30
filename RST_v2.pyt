@@ -77,7 +77,7 @@ class RST:
             datatype="Field",
             parameterType="Optional",
             direction="Input",
-            category="Age Standardization"
+            category="Age Standardization (optional)"
         )
         param_age_grp_field.parameterDependencies = [param_data_table.name]
 
@@ -87,27 +87,29 @@ class RST:
             datatype="GPString",
             parameterType="Optional",
             direction="Input",
-            category="Age Standardization"
+            category="Age Standardization (optional)"
         )
         param_std_pop_yr.filter.list = ["2000", "2010"]
 
         param_age_std_groups = arcpy.Parameter(
-            displayName="Age Groups",
-            name="AgeGroups",
+            displayName="Standardized Age Groups",
+            name="StandardizedAgeGroups",
             datatype="GPValueTable",
             parameterType="Optional",
             direction="Input",
-            category="Age Standardization"
+            category="Age Standardization (optional)"
         )
-        param_age_std_groups.columns = [['String', 'Group Name'], ['String', 'Constituent Age Group(s)']]
+        param_age_std_groups.columns = [['String', 'Lower age value'], ['String', 'Upper age value']]
+        param_age_std_groups.filters[0].type = "ValueList"
+        param_age_std_groups.filters[0].list = ["0", "5", "15", "25", "35", "45", "55", "65", "75"]
         param_age_std_groups.filters[1].type = "ValueList"
-        param_age_std_groups.filters[1].list = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
+        param_age_std_groups.filters[1].list = ["14", "24", "34", "44", "54", "64", "74", "84", "85up"]
 
         param_rates_per = arcpy.Parameter(
             displayName="Rate",
             name="Rate",
             datatype="GPValueTable",
-            parameterType="Optional",
+            parameterType="Required",
             direction="Input"
         )
         param_rates_per.columns = [['Long', 'Per']]
@@ -211,25 +213,12 @@ class RST:
         # Check if Output Table exists
         if estimates_out_exists:
             estimates_out.setErrorMessage("Output Table already exists")
-        
+
+        # Check for empty standardized age group bounds
         if age_std_groups.valueAsText is not None:
-            age_std_groups_dict = {}
-            for grp_name, age_grp in age_std_groups.values:
-                if grp_name in age_std_groups_dict:
-                    age_std_groups_dict[grp_name].append(age_grp)
-                else:
-                    age_std_groups_dict[grp_name] = [age_grp]
-            age_std_groups_arr = list(age_std_groups_dict.values())
-            age_std_group_names = list(age_std_groups_dict.keys())
-
-            # Check if Constituent Age Groups contain repeated values
-            grp_w_repeat = [age_grp for age_grp in age_std_groups_arr if len(age_grp) != len(set(age_grp))]
-            if len(grp_w_repeat) != 0:
-                age_std_groups.setErrorMessage("Repeated Constituent Age Group in a Group")
-
-            # Check if any of the Group Names are empty
-            if "" in age_std_group_names:
-                age_std_groups.setErrorMessage("At least one Group Name is empty")
+            for lv, uv, in age_std_groups.values:
+                if lv == "" or uv == "":
+                    age_std_groups.setErrorMessage("At least one lower or upper age value is empty")
 
         return
 
@@ -258,16 +247,14 @@ class RST:
         rates_per = int(rates_per.valueAsText)
 
         # Get the age group distribution
-        age_std_groups_arr = age_std_group_names = []
+        const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
+        age_std_groups_arr = age_std_groups_names = []
         if age_std_groups.values is not None:
-            age_std_groups_dict = {}
-            for grp_name, age_grp in age_std_groups.values:
-                if grp_name in age_std_groups_dict:
-                    age_std_groups_dict[grp_name].append(age_grp)
-                else:
-                    age_std_groups_dict[grp_name] = [age_grp]
-            age_std_groups_arr = list(age_std_groups_dict.values())
-            age_std_group_names = list(age_std_groups_dict.keys())
+            for lv, uv, in age_std_groups.values:
+                lv_index = [i for i, grp in enumerate(const_age_grps) if grp.startswith(lv)][0]
+                uv_index = [i for i, grp in enumerate(const_age_grps) if grp.endswith(uv)][0]
+                age_std_groups_arr.append(const_age_grps[lv_index:(uv_index + 1)])
+                age_std_groups_names.append( lv + ("to" + uv if uv != "85up" else "up") )
 
         # Read in data
         data = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, data_fields_str), columns = data_fields_str)
@@ -342,7 +329,7 @@ class RST:
         if age_std_groups.values is not None:
             for ages in age_std_groups_arr:
                 output = helpers.age_std(output, age_groups, std_pop, ages)
-            age_groups.extend(age_std_group_names)
+            age_groups.extend(age_std_groups_names)
         
         medians, ci_chart, reliable = helpers.get_medians(output, regions, age_groups)
 
