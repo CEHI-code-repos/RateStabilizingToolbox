@@ -40,7 +40,7 @@ class RST:
             direction="Input"
         )
         param_data_fields.parameterDependencies = [param_data_table.name]
-        param_data_fields.columns = [['Field', 'Region ID'], ['Field', 'Event'], ['Field', 'Population']]
+        param_data_fields.columns = [['Field', 'Region ID'], ['Field', 'Event Count'], ['Field', 'Population Count']]
         param_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         param_feature = arcpy.Parameter(
