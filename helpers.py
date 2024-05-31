@@ -1,8 +1,9 @@
 import arcpy
 import numpy as np
 import pandas as pd
-import json
 from param_updates import *
+
+## Model helpers
 
 # Calculate sets of contiguous adjacency structures
 def get_islands(adj):
@@ -100,3 +101,24 @@ def get_medians(output, regions, ages):
         reliable = reliable.rename(columns = {'': "reliable"})
         ci_chart = ci_chart.rename(columns = {'': "max_reliable_ci"})
     return [medians, ci_chart, reliable]
+
+## Tool helpers
+
+const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
+
+def exists(url):
+    if url is not None and arcpy.Exists(url):
+        return True
+    return False
+
+def get_fieldType(url, fieldName):
+    if exists(url) and fieldName is not None:
+        age_groups_field = [f.type for f in arcpy.ListFields(url) if f.name == fieldName]
+        if len(age_groups_field) == 1:
+            return age_groups_field[0]
+    return None
+        
+def get_pandas(url, fields):
+    if exists(url):
+        return pd.DataFrame(data = arcpy.da.SearchCursor(url, fields), columns = fields)
+    return None

@@ -4,6 +4,9 @@ import pandas as pd
 import numpy as np
 import helpers
 
+import importlib
+importlib.reload(helpers)
+
 class Toolbox:
     def __init__(self):
         """Define the toolbox (the name of the toolbox is the name of the
@@ -159,8 +162,7 @@ class RST:
                 age_groups_column = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, [data_ageGrp_id.valueAsText]), columns = [data_ageGrp_id.valueAsText])
                 age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
 
-                const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
-                grp_not_in_consts = [group for group in age_groups if group not in const_age_grps]
+                grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
 
                 if len(grp_not_in_consts) == 0:
                     lvs = sorted([int(group.split("-")[0]) for group in age_groups if group != "85up"])
@@ -184,20 +186,15 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
 
-        data_exists = False
-        data_region_id_str = data_event_id_str = data_pop_id_str = data_region_id_type = ""
+        data_region_id_str = data_event_id_str = data_pop_id_str = ""
         if data_fields.values is not None:
             data_fields_str = [str(field) for field in data_fields.values[0]]
             data_region_id_str = data_fields_str[0]
             data_event_id_str = data_fields_str[1]
             data_pop_id_str = data_fields_str[2]
-
-        feature_exists = False
-        feature_region_id = feature_region_id_type = ""
+        feature_region_id_str = ""
         if feature_fields.values is not None:
-            feature_region_id = feature_fields.values[0][0]
-        
-        estimates_out_exists = False
+            feature_region_id_str = feature_fields.values[0][0]
 
         # Check if all fields are filled in for age standardization
         if data_ageGrp_id.valueAsText is None and (std_pop_yr.valueAsText is not None or age_std_groups.valueAsText is not None):
@@ -207,41 +204,24 @@ class RST:
         if age_std_groups.valueAsText is None and (data_ageGrp_id.valueAsText is not None or std_pop_yr.valueAsText is not None):
             age_std_groups.setErrorMessage("Age Groups necessary for age standardization")
 
-        # Check if any the inputs exist
-        if data_url.valueAsText is not None and arcpy.Exists(data_url.valueAsText):
-            data_exists = True
-        if feature_url.valueAsText is not None and arcpy.Exists(feature_url.valueAsText):
-            feature_exists = True
-        if estimates_out.valueAsText is not None and arcpy.Exists(estimates_out.valueAsText):
-            estimates_out_exists = True
-
         # Check if Region ID types are the same
-        if data_exists and feature_exists:
-            data_region_id_type = [f.type for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_region_id_str]
-            feature_region_id_type = [f.type for f in arcpy.ListFields(feature_url.valueAsText) if f.name == str(feature_region_id)]
-            if len(data_region_id_type) + len(feature_region_id_type) != 2:
-                pass
-            elif data_region_id_type[0] != feature_region_id_type[0]:
-                feature_fields.setErrorMessage("Input Feature Region ID field type does not match Input Table Region ID field type")
+        data_region_id_type = helpers.get_fieldType(data_url.valueAsText, data_region_id_str)
+        feature_region_id_type = helpers.get_fieldType(data_url.valueAsText, feature_region_id_str)
+        if data_region_id_type and feature_region_id_type and data_region_id_type != feature_region_id_type:
+            feature_fields.setErrorMessage("Input Feature Region ID field type does not match Input Table Region ID field type")
 
         # Check if Event ID is an integer
-        if data_exists:
-            data_event_id_type = [f.type for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_event_id_str]
-            if len(data_event_id_type) != 1:
-                pass
-            elif data_event_id_type[0] not in ["SmallInteger", "Integer", "BigInteger"]:
-                data_fields.setErrorMessage("Event field type is not a integer")
-
+        data_event_id_type = helpers.get_fieldType(data_url.valueAsText, data_event_id_str)
+        if data_event_id_type and data_event_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
+            data_fields.setErrorMessage("Event field type is not a integer")
+ 
         # Check if Population ID is an integer
-        if data_exists:
-            data_pop_id_type = [f.type for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_pop_id_str]
-            if len(data_pop_id_type) != 1:
-                pass
-            elif data_pop_id_type[0] not in ["SmallInteger", "Integer", "BigInteger"]:
-                data_fields.setErrorMessage("Population field type is not a integer")
+        data_pop_id_type = helpers.get_fieldType(data_url.valueAsText, data_pop_id_str)
+        if data_pop_id_type and data_pop_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
+            data_fields.setErrorMessage("Population field type is not a integer")
 
         # Check if Output Table exists
-        if estimates_out_exists:
+        if helpers.exists(estimates_out.valueAsText):
             estimates_out.setErrorMessage("Output Table already exists")
 
         # Check for empty standardized age group bounds
@@ -251,14 +231,13 @@ class RST:
                     age_std_groups.setErrorMessage("At least one lower or upper age value is empty")
 
         # Check for age groups not within predefined age groups
-        if data_exists and data_ageGrp_id.valueAsText is not None:
+        if helpers.exists(data_url.valueAsText) and data_ageGrp_id.valueAsText is not None:
             age_groups_field = [f for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_ageGrp_id.valueAsText]
             if len(age_groups_field) == 1:
                 age_groups_column = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, [data_ageGrp_id.valueAsText]), columns = [data_ageGrp_id.valueAsText])
                 age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
 
-                const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
-                grp_not_in_consts = [group for group in age_groups if group not in const_age_grps]
+                grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
 
                 if len(grp_not_in_consts) != 0:
                     data_ageGrp_id.setErrorMessage('Age Group field contains value "' + str(grp_not_in_consts[0]) + '" which is not within predefined age group list')
@@ -291,13 +270,12 @@ class RST:
         rates_per = int(rates_per.valueAsText)
 
         # Get the age group distribution
-        const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
         age_std_groups_arr = age_std_groups_names = []
         if age_std_groups.values is not None:
             for lv, uv, in age_std_groups.values:
-                lv_index = [i for i, grp in enumerate(const_age_grps) if grp.startswith(lv)][0]
-                uv_index = [i for i, grp in enumerate(const_age_grps) if grp.endswith(uv)][0]
-                age_std_groups_arr.append(const_age_grps[lv_index:(uv_index + 1)])
+                lv_index = [i for i, grp in enumerate(helpers.const_age_grps) if grp.startswith(lv)][0]
+                uv_index = [i for i, grp in enumerate(helpers.const_age_grps) if grp.endswith(uv)][0]
+                age_std_groups_arr.append(helpers.const_age_grps[lv_index:(uv_index + 1)])
                 age_std_groups_names.append( lv + ("to" + uv if uv != "85up" else "up") )
 
         # Read in data
@@ -340,8 +318,7 @@ class RST:
         if (std_pop_yr.valueAsText == "2010"):
             std_pop = np.array([20203362, 41025851, 43626342, 41063948, 41070606, 45006716, 36482729, 21713429, 13061122, 5493433])
         if std_pop_yr.valueAsText is not None:
-            pop_ages = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
-            std_pop = std_pop[np.isin(pop_ages, age_groups)]
+            std_pop = std_pop[np.isin(helpers.const_age_grps, age_groups)]
 
         # Create adjacency matrix
         arcpy.AddMessage("Creating adjacency matrix ...")
