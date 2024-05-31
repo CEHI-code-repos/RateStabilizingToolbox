@@ -106,7 +106,7 @@ class RST:
         param_age_std_groups.filters[0].type = "ValueList"
         param_age_std_groups.filters[0].list = ["0", "5", "15", "25", "35", "45", "55", "65", "75"]
         param_age_std_groups.filters[1].type = "ValueList"
-        param_age_std_groups.filters[1].list = ["14", "24", "34", "44", "54", "64", "74", "84", "85up"]
+        param_age_std_groups.filters[1].list = ["14", "24", "34", "44", "54", "64", "74", "84", "up"]
 
         param_rates_per = arcpy.Parameter(
             displayName="Rate",
@@ -150,25 +150,19 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
 
-        data_exists = False
-
-        if data_url.valueAsText is not None and arcpy.Exists(data_url.valueAsText):
-            data_exists = True
-
         # Restrict age groups to only those present within data
-        if data_exists and data_ageGrp_id.valueAsText is not None:
-            age_groups_field = [f for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_ageGrp_id.valueAsText]
-            if len(age_groups_field) == 1:
-                age_groups_column = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, [data_ageGrp_id.valueAsText]), columns = [data_ageGrp_id.valueAsText])
-                age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
+        data_region_id_type = helpers.get_fieldType(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        if data_region_id_type:
+            age_groups_column = helpers.get_pandas(data_url.valueAsText, [data_ageGrp_id.valueAsText])
+            age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
 
-                grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
+            grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
 
-                if len(grp_not_in_consts) == 0:
-                    lvs = sorted([int(group.split("-")[0]) for group in age_groups if group != "85up"])
-                    uvs = sorted([int(group.split("-")[1]) if group != "85up" else 85 for group in age_groups])
-                    age_std_groups.filters[0].list = [str(lv) for lv in lvs[:-1]]
-                    age_std_groups.filters[1].list = ["85up" if uv == 85 else str(uv) for uv in uvs[1:]]
+            if grp_not_in_consts:
+                lvs = sorted([int(group.split("-")[0]) for group in age_groups if group != "85up"])
+                uvs = sorted([int(group.split("-")[1]) if group != "85up" else 85 for group in age_groups])
+                age_std_groups.filters[0].list = [str(lv) for lv in lvs[:-1]]
+                age_std_groups.filters[1].list = ["up" if uv == 85 else str(uv) for uv in uvs[1:]]
 
         return
 
@@ -229,20 +223,7 @@ class RST:
             for lv, uv, in age_std_groups.values:
                 if lv == "" or uv == "":
                     age_std_groups.setErrorMessage("At least one lower or upper age value is empty")
-
-        # Check for age groups not within predefined age groups
-        if helpers.exists(data_url.valueAsText) and data_ageGrp_id.valueAsText is not None:
-            age_groups_field = [f for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_ageGrp_id.valueAsText]
-            if len(age_groups_field) == 1:
-                age_groups_column = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, [data_ageGrp_id.valueAsText]), columns = [data_ageGrp_id.valueAsText])
-                age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
-
-                grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
-
-                if len(grp_not_in_consts) != 0:
-                    data_ageGrp_id.setErrorMessage('Age Group field contains value "' + str(grp_not_in_consts[0]) + '" which is not within predefined age group list')
                     
-
         return
 
     def execute(self, parameters, messages):
@@ -270,7 +251,8 @@ class RST:
         rates_per = int(rates_per.valueAsText)
 
         # Get the age group distribution
-        age_std_groups_arr = age_std_groups_names = []
+        age_std_groups_arr = []
+        age_std_groups_names = []
         if age_std_groups.values is not None:
             for lv, uv, in age_std_groups.values:
                 lv_index = [i for i, grp in enumerate(helpers.const_age_grps) if grp.startswith(lv)][0]
@@ -279,7 +261,7 @@ class RST:
                 age_std_groups_names.append( lv + ("to" + uv if uv != "85up" else "up") )
 
         # Read in data
-        data = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, data_fields_str), columns = data_fields_str)
+        data = helpers.get_pandas(data_url.valueAsText, data_fields_str)
         age_groups = [""]
         num_group = 1
         data = data.sort_values(by = [data_region_id_str])
@@ -291,15 +273,8 @@ class RST:
             num_group = data[data_ageGrp_id.valueAsText].nunique()
 
         arcpy.AddMessage("Validating arguments ...")
-        # Check if age_std_groups contains age groups that the data does not
-        flat_age_std_groups = {age_grp for group in age_std_groups_arr for age_grp in group}
-        if not flat_age_std_groups.issubset(set(age_groups)):
-            err = "Constituent Age Group not present in Input Table"
-            arcpy.AddError(err)
-            raise ValueError(err)
-
         # Check if data and feature regions are identical
-        feature_regions = pd.DataFrame(data = arcpy.da.SearchCursor(feature_url.valueAsText, [feature_region_id_str]), columns = [feature_region_id_str])
+        feature_regions = helpers.get_pandas(feature_url.valueAsText, [feature_region_id_str])
         feature_regions = feature_regions[feature_region_id_str].unique().tolist()
         feature_regions.sort()
         if len(feature_regions) != len(regions) or feature_regions != regions:
