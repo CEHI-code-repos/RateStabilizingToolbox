@@ -136,7 +136,37 @@ class RST:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
-        parameters
+
+        data_url = parameters[0]
+        data_fields = parameters[1]
+        feature_url = parameters[2]
+        feature_fields = parameters[3]
+        rates_per = parameters[4]
+        estimates_out = parameters[5]
+        data_ageGrp_id = parameters[6]
+        std_pop_yr = parameters[7]
+        age_std_groups = parameters[8]
+
+        data_exists = False
+
+        if data_url.valueAsText is not None and arcpy.Exists(data_url.valueAsText):
+            data_exists = True
+
+        # Restrict age groups to only those present within data
+        if data_exists and data_ageGrp_id.valueAsText is not None:
+            age_groups_field = [f for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_ageGrp_id.valueAsText]
+            if len(age_groups_field) == 1:
+                age_groups_column = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, [data_ageGrp_id.valueAsText]), columns = [data_ageGrp_id.valueAsText])
+                age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
+
+                const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
+                grp_not_in_consts = [group for group in age_groups if group not in const_age_grps]
+
+                if len(grp_not_in_consts) == 0:
+                    lvs = sorted([int(group.split("-")[0]) for group in age_groups if group != "85up"])
+                    uvs = sorted([int(group.split("-")[1]) if group != "85up" else 85 for group in age_groups])
+                    age_std_groups.filters[0].list = [str(lv) for lv in lvs[:-1]]
+                    age_std_groups.filters[1].list = ["85up" if uv == 85 else str(uv) for uv in uvs[1:]]
 
         return
 
@@ -219,6 +249,20 @@ class RST:
             for lv, uv, in age_std_groups.values:
                 if lv == "" or uv == "":
                     age_std_groups.setErrorMessage("At least one lower or upper age value is empty")
+
+        # Check for age groups not within predefined age groups
+        if data_exists and data_ageGrp_id.valueAsText is not None:
+            age_groups_field = [f for f in arcpy.ListFields(data_url.valueAsText) if f.name == data_ageGrp_id.valueAsText]
+            if len(age_groups_field) == 1:
+                age_groups_column = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, [data_ageGrp_id.valueAsText]), columns = [data_ageGrp_id.valueAsText])
+                age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
+
+                const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
+                grp_not_in_consts = [group for group in age_groups if group not in const_age_grps]
+
+                if len(grp_not_in_consts) != 0:
+                    data_ageGrp_id.setErrorMessage('Age Group field contains value "' + str(grp_not_in_consts[0]) + '" which is not within predefined age group list')
+                    
 
         return
 
