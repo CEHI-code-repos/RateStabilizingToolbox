@@ -180,15 +180,15 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
 
-        data_region_id_str = data_event_id_str = data_pop_id_str = ""
+        data_region_id_str = data_event_id_str = data_pop_id_str = None
         if data_fields.values is not None:
             data_fields_str = [str(field) for field in data_fields.values[0]]
             data_region_id_str = data_fields_str[0]
             data_event_id_str = data_fields_str[1]
             data_pop_id_str = data_fields_str[2]
-        feature_region_id_str = ""
+        feature_region_id_str = None
         if feature_fields.values is not None:
-            feature_region_id_str = feature_fields.values[0][0]
+            feature_region_id_str = str(feature_fields.values[0][0])
 
         # Check if all fields are filled in for age standardization
         if data_ageGrp_id.valueAsText is None and (std_pop_yr.valueAsText is not None or age_std_groups.valueAsText is not None):
@@ -223,7 +223,20 @@ class RST:
             for lv, uv, in age_std_groups.values:
                 if lv == "" or uv == "":
                     age_std_groups.setErrorMessage("At least one lower or upper age value is empty")
-                    
+
+        # Check if data and feature regions are identical
+        data_regions = helpers.get_fieldAsList(data_url.valueAsText, data_region_id_str)
+        feature_regions = helpers.get_fieldAsList(feature_url.valueAsText, feature_region_id_str)
+        if feature_regions and data_regions:
+            data_regions = set(data_regions)
+            feature_regions = set(feature_regions)
+            regions_only_feature = feature_regions - data_regions
+            regions_only_data = data_regions - feature_regions
+            if regions_only_data:
+                data_fields.setErrorMessage(data_region_id_str + " " + str(list(regions_only_data)[0]) + " not present in Input Feature " + feature_region_id_str)
+            elif regions_only_feature:
+                feature_fields.setErrorMessage(feature_region_id_str + " " + str(list(regions_only_feature)[0]) + " not present in Input Table " + data_region_id_str)
+
         return
 
     def execute(self, parameters, messages):
@@ -271,16 +284,6 @@ class RST:
             data = data.sort_values(by = [data_region_id_str, data_ageGrp_id.valueAsText])
             age_groups = data[data_ageGrp_id.valueAsText].unique().tolist()
             num_group = data[data_ageGrp_id.valueAsText].nunique()
-
-        arcpy.AddMessage("Validating arguments ...")
-        # Check if data and feature regions are identical
-        feature_regions = helpers.get_pandas(feature_url.valueAsText, [feature_region_id_str])
-        feature_regions = feature_regions[feature_region_id_str].unique().tolist()
-        feature_regions.sort()
-        if len(feature_regions) != len(regions) or feature_regions != regions:
-            err = "Input Table and Input Feature do not have an identical regions"
-            arcpy.AddError(err)
-            raise ValueError(err)
         
         Y = np.array(data[data_event_id_str]).reshape([num_region, num_group])
         n = np.array(data[data_pop_id_str]).reshape([num_region, num_group])

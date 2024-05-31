@@ -119,6 +119,11 @@ def get_fieldType(url, fieldName):
     return None
         
 def get_pandas(url, fields):
-    if exists(url):
+    if exists(url) and fields is not None:
         return pd.DataFrame(data = arcpy.da.SearchCursor(url, fields), columns = fields)
+    return None
+
+def get_fieldAsList(url, fieldName):
+    if exists(url) and fieldName is not None and get_fieldType(url, fieldName):
+        return [val[0] for val in arcpy.da.SearchCursor(url, fieldName)]
     return None
