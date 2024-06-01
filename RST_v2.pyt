@@ -151,14 +151,13 @@ class RST:
         age_std_groups = parameters[8]
 
         # Restrict age groups to only those present within data
-        data_region_id_type = helpers.get_fieldType(data_url.valueAsText, data_ageGrp_id.valueAsText)
-        if data_region_id_type:
-            age_groups_column = helpers.get_pandas(data_url.valueAsText, [data_ageGrp_id.valueAsText])
-            age_groups = age_groups_column[data_ageGrp_id.valueAsText].unique().tolist()
+        age_groups_column = helpers.get_fieldAsList(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        if age_groups_column:
+            age_groups = list(set(age_groups_column))
 
             grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
 
-            if grp_not_in_consts:
+            if not grp_not_in_consts:
                 lvs = sorted([int(group.split("-")[0]) for group in age_groups if group != "85up"])
                 uvs = sorted([int(group.split("-")[1]) if group != "85up" else 85 for group in age_groups])
                 age_std_groups.filters[0].list = [str(lv) for lv in lvs[:-1]]
@@ -197,22 +196,35 @@ class RST:
             std_pop_yr.setErrorMessage("Standard Population Year necessary for age standardization")
         if age_std_groups.valueAsText is None and (data_ageGrp_id.valueAsText is not None or std_pop_yr.valueAsText is not None):
             age_std_groups.setErrorMessage("Age Groups necessary for age standardization")
-
-        # Check if Region ID types are the same
+        
         data_region_id_type = helpers.get_fieldType(data_url.valueAsText, data_region_id_str)
         feature_region_id_type = helpers.get_fieldType(data_url.valueAsText, feature_region_id_str)
+        data_regions = helpers.get_fieldAsList(data_url.valueAsText, data_region_id_str)
+        feature_regions = helpers.get_fieldAsList(feature_url.valueAsText, feature_region_id_str)
+        # Check if Region ID types are the same
         if data_region_id_type and feature_region_id_type and data_region_id_type != feature_region_id_type:
             feature_fields.setErrorMessage("Input Feature Region ID field type does not match Input Table Region ID field type")
+        elif feature_regions and data_regions:
+            data_regions_set = set(data_regions)
+            feature_regions_set = set(feature_regions)
+            regions_only_feature = feature_regions_set - data_regions_set
+            regions_only_data = data_regions_set - feature_regions_set
+        # Check if data contains regions not present in feature
+            if regions_only_data:
+                data_fields.setErrorMessage(data_region_id_str + ' "' + str(list(regions_only_data)[0]) + '" not present in Input Feature ' + feature_region_id_str)
+        # Check if feature contains regions not present in data
+            elif regions_only_feature:
+                feature_fields.setErrorMessage(feature_region_id_str + ' "' + str(list(regions_only_feature)[0]) + '" not present in Input Table ' + data_region_id_str)
 
-        # Check if Event ID is an integer
+        # Check if Event Count is an integer
         data_event_id_type = helpers.get_fieldType(data_url.valueAsText, data_event_id_str)
         if data_event_id_type and data_event_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
-            data_fields.setErrorMessage("Event field type is not a integer")
+            data_fields.setErrorMessage("Event Count field type is not an Integer")
  
-        # Check if Population ID is an integer
+        # Check if Population Count is an integer
         data_pop_id_type = helpers.get_fieldType(data_url.valueAsText, data_pop_id_str)
         if data_pop_id_type and data_pop_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
-            data_fields.setErrorMessage("Population field type is not a integer")
+            data_fields.setErrorMessage("Population Count field type is not an Integer")
 
         # Check if Output Table exists
         if helpers.exists(estimates_out.valueAsText):
@@ -224,18 +236,32 @@ class RST:
                 if lv == "" or uv == "":
                     age_std_groups.setErrorMessage("At least one lower or upper age value is empty")
 
-        # Check if data and feature regions are identical
-        data_regions = helpers.get_fieldAsList(data_url.valueAsText, data_region_id_str)
-        feature_regions = helpers.get_fieldAsList(feature_url.valueAsText, feature_region_id_str)
-        if feature_regions and data_regions:
-            data_regions = set(data_regions)
-            feature_regions = set(feature_regions)
-            regions_only_feature = feature_regions - data_regions
-            regions_only_data = data_regions - feature_regions
-            if regions_only_data:
-                data_fields.setErrorMessage(data_region_id_str + " " + str(list(regions_only_data)[0]) + " not present in Input Feature " + feature_region_id_str)
-            elif regions_only_feature:
-                feature_fields.setErrorMessage(feature_region_id_str + " " + str(list(regions_only_feature)[0]) + " not present in Input Table " + data_region_id_str)
+        data_ageGrp_type = helpers.get_fieldType(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        ageGrp_column = helpers.get_fieldAsList(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        # Check if age group is a String
+        if data_ageGrp_type and data_ageGrp_type != "String":
+            data_ageGrp_id.setErrorMessage("Age Group field type is not a String")
+        # Check if invalid age groups are present
+        elif ageGrp_column:
+            age_groups = list(set(ageGrp_column))
+            grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
+            if grp_not_in_consts:
+                data_ageGrp_id.setErrorMessage('Age Group "' + grp_not_in_consts[0] + '" is not a valid age group')
+            elif data_regions:
+                regions_grp_dict = {}
+                for i, region in enumerate(data_regions):
+                    if region in regions_grp_dict:
+                        regions_grp_dict[region].append(ageGrp_column[i])
+                    else:
+                        regions_grp_dict[region] = [ageGrp_column[i]]
+                unique_grps_num_list = [len(set(regions_grp_dict[region])) for region in regions_grp_dict]
+                grps_num_list = [len(regions_grp_dict[region]) for region in regions_grp_dict]
+        # Check if there duplicate age groups
+                if unique_grps_num_list != grps_num_list:
+                    data_ageGrp_id.setErrorMessage("At least one Age Group is duplicated within a Region")
+        # Check if there missing age groups
+                elif len(set(grps_num_list)) != 1:
+                    data_ageGrp_id.setErrorMessage("At least one Region is missing an Age Group")
 
         return
 
@@ -339,7 +365,7 @@ class RST:
             ci_chart = ci_chart.add_prefix("maxCI_")
             reliable = reliable.add_prefix("reliable_")
             output = pd.concat([medians, ci_chart, reliable], axis = 1)
-            for i in range(len(medians.columns)):
+            for i, med in enumerate(medians.columns):
                 output_cols.extend([ medians.columns[i], ci_chart.columns[i], reliable.columns[i] ])
             output = output[output_cols].reset_index()
         else:
