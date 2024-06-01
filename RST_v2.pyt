@@ -310,6 +310,9 @@ class RST:
             data = data.sort_values(by = [data_region_id_str, data_ageGrp_id.valueAsText])
             age_groups = data[data_ageGrp_id.valueAsText].unique().tolist()
             num_group = data[data_ageGrp_id.valueAsText].nunique()
+        elif num_region != len(data.index):
+            data = data.groupby(data_region_id_str).agg({data_event_id_str : 'sum', data_pop_id_str : "sum"})
+            messages.addWarningMessage("Repeated Region IDs were detected. Population and Event Counts were aggregated to totals.")
         
         Y = np.array(data[data_event_id_str]).reshape([num_region, num_group])
         n = np.array(data[data_pop_id_str]).reshape([num_region, num_group])
