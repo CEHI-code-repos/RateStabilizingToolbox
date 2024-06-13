@@ -80,7 +80,7 @@ class RST:
             datatype="Field",
             parameterType="Optional",
             direction="Input",
-            category="Age Standardization"
+            category="Age Standardization (optional)"
         )
         param_age_grp_field.parameterDependencies = [param_data_table.name]
 
@@ -90,27 +90,29 @@ class RST:
             datatype="GPString",
             parameterType="Optional",
             direction="Input",
-            category="Age Standardization"
+            category="Age Standardization (optional)"
         )
         param_std_pop_yr.filter.list = ["2000", "2010"]
 
         param_age_std_groups = arcpy.Parameter(
-            displayName="Age Groups",
-            name="AgeGroups",
+            displayName="Standardized Age Groups",
+            name="StandardizedAgeGroups",
             datatype="GPValueTable",
             parameterType="Optional",
             direction="Input",
-            category="Age Standardization"
+            category="Age Standardization (optional)"
         )
-        param_age_std_groups.columns = [['String', 'Group Name'], ['String', 'Constituent Age Group(s)']]
+        param_age_std_groups.columns = [['String', 'Lower age value'], ['String', 'Upper age value']]
+        param_age_std_groups.filters[0].type = "ValueList"
+        param_age_std_groups.filters[0].list = ["0", "5", "15", "25", "35", "45", "55", "65", "75"]
         param_age_std_groups.filters[1].type = "ValueList"
-        param_age_std_groups.filters[1].list = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
+        param_age_std_groups.filters[1].list = ["14", "24", "34", "44", "54", "64", "74", "84", "up"]
 
         param_rates_per = arcpy.Parameter(
             displayName="Rate",
             name="Rate",
             datatype="GPValueTable",
-            parameterType="Optional",
+            parameterType="Required",
             direction="Input"
         )
         param_rates_per.columns = [['Long', 'Per']]
@@ -137,7 +139,29 @@ class RST:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
-        parameters
+
+        data_url = parameters[0]
+        data_fields = parameters[1]
+        feature_url = parameters[2]
+        feature_fields = parameters[3]
+        rates_per = parameters[4]
+        estimates_out = parameters[5]
+        data_ageGrp_id = parameters[6]
+        std_pop_yr = parameters[7]
+        age_std_groups = parameters[8]
+
+        # Restrict age groups to only those present within data
+        age_groups_column = helpers.get_fieldAsList(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        if age_groups_column:
+            age_groups = list(set(age_groups_column))
+
+            grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
+
+            if not grp_not_in_consts:
+                lvs = sorted([int(group.split("-")[0]) for group in age_groups if group != "85up"])
+                uvs = sorted([int(group.split("-")[1]) if group != "85up" else 85 for group in age_groups])
+                age_std_groups.filters[0].list = [str(lv) for lv in lvs[:-1]]
+                age_std_groups.filters[1].list = ["up" if uv == 85 else str(uv) for uv in uvs[1:]]
 
         return
 
@@ -155,15 +179,18 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
 
-        data_region_id_str = data_event_id_str = data_pop_id_str = ""
+        data_region_id_str = data_event_id_str = data_pop_id_str = None
+        
         if data_fields.values is not None:
             data_fields_str = [str(field) for field in data_fields.values[0]]
             data_region_id_str = data_fields_str[0]
             data_event_id_str = data_fields_str[1]
             data_pop_id_str = data_fields_str[2]
-        feature_region_id_str = ""
+
+
+        feature_region_id_str = None
         if feature_fields.values is not None:
-            feature_region_id_str = feature_fields.values[0][0]
+            feature_region_id_str = str(feature_fields.values[0][0])
 
         # Check if all fields are filled in for age standardization
         if data_ageGrp_id.valueAsText is None and (std_pop_yr.valueAsText is not None or age_std_groups.valueAsText is not None):
@@ -173,44 +200,71 @@ class RST:
         if age_std_groups.valueAsText is None and (data_ageGrp_id.valueAsText is not None or std_pop_yr.valueAsText is not None):
             age_std_groups.setErrorMessage("Age Groups necessary for age standardization")
 
-        # Check if Region ID types are the same
         data_region_id_type = helpers.get_fieldType(data_url.valueAsText, data_region_id_str)
         feature_region_id_type = helpers.get_fieldType(data_url.valueAsText, feature_region_id_str)
+        data_regions = helpers.get_fieldAsList(data_url.valueAsText, data_region_id_str)
+        feature_regions = helpers.get_fieldAsList(feature_url.valueAsText, feature_region_id_str)
+        # Check if Region ID types are the same
         if data_region_id_type and feature_region_id_type and data_region_id_type != feature_region_id_type:
             feature_fields.setErrorMessage("Input Feature Region ID field type does not match Input Table Region ID field type")
+        elif feature_regions and data_regions:
+            data_regions_set = set(data_regions)
+            feature_regions_set = set(feature_regions)
+            regions_only_feature = feature_regions_set - data_regions_set
+            regions_only_data = data_regions_set - feature_regions_set
+        # Check if data contains regions not present in feature
+            if regions_only_data:
+                data_fields.setErrorMessage(data_region_id_str + ' "' + str(list(regions_only_data)[0]) + '" not present in Input Feature ' + feature_region_id_str)
+        # Check if feature contains regions not present in data
+            elif regions_only_feature:
+                feature_fields.setErrorMessage(feature_region_id_str + ' "' + str(list(regions_only_feature)[0]) + '" not present in Input Table ' + data_region_id_str)
 
-        # Check if Event ID is an integer
+        # Check if Event Count is an integer
         data_event_id_type = helpers.get_fieldType(data_url.valueAsText, data_event_id_str)
         if data_event_id_type and data_event_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
-            data_fields.setErrorMessage("Event field type is not a integer")
+            data_fields.setErrorMessage("Event Count field type is not an Integer")
  
-        # Check if Population ID is an integer
+        # Check if Population Count is an integer
         data_pop_id_type = helpers.get_fieldType(data_url.valueAsText, data_pop_id_str)
         if data_pop_id_type and data_pop_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
-            data_fields.setErrorMessage("Population field type is not a integer")
+            data_fields.setErrorMessage("Population Count field type is not an Integer")
 
         # Check if Output Table exists
         if helpers.exists(estimates_out.valueAsText):
             estimates_out.setErrorMessage("Output Table already exists")
-        
+
+        # Check for empty standardized age group bounds
         if age_std_groups.valueAsText is not None:
-            age_std_groups_dict = {}
-            for grp_name, age_grp in age_std_groups.values:
-                if grp_name in age_std_groups_dict:
-                    age_std_groups_dict[grp_name].append(age_grp)
-                else:
-                    age_std_groups_dict[grp_name] = [age_grp]
-            age_std_groups_arr = list(age_std_groups_dict.values())
-            age_std_group_names = list(age_std_groups_dict.keys())
+            for lv, uv, in age_std_groups.values:
+                if lv == "" or uv == "":
+                    age_std_groups.setErrorMessage("At least one lower or upper age value is empty")
 
-            # Check if Constituent Age Groups contain repeated values
-            grp_w_repeat = [age_grp for age_grp in age_std_groups_arr if len(age_grp) != len(set(age_grp))]
-            if len(grp_w_repeat) != 0:
-                age_std_groups.setErrorMessage("Repeated Constituent Age Group in a Group")
-
-            # Check if any of the Group Names are empty
-            if "" in age_std_group_names:
-                age_std_groups.setErrorMessage("At least one Group Name is empty")
+        data_ageGrp_type = helpers.get_fieldType(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        ageGrp_column = helpers.get_fieldAsList(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        # Check if age group is a String
+        if data_ageGrp_type and data_ageGrp_type != "String":
+            data_ageGrp_id.setErrorMessage("Age Group field type is not a String")
+        # Check if invalid age groups are present
+        elif ageGrp_column:
+            age_groups = list(set(ageGrp_column))
+            grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
+            if grp_not_in_consts:
+                data_ageGrp_id.setErrorMessage('Age Group "' + grp_not_in_consts[0] + '" is not a valid age group')
+            elif data_regions:
+                regions_grp_dict = {}
+                for i, region in enumerate(data_regions):
+                    if region in regions_grp_dict:
+                        regions_grp_dict[region].append(ageGrp_column[i])
+                    else:
+                        regions_grp_dict[region] = [ageGrp_column[i]]
+                unique_grps_num_list = [len(set(regions_grp_dict[region])) for region in regions_grp_dict]
+                grps_num_list = [len(regions_grp_dict[region]) for region in regions_grp_dict]
+        # Check if there duplicate age groups
+                if unique_grps_num_list != grps_num_list:
+                    data_ageGrp_id.setErrorMessage("At least one Age Group is duplicated within a Region")
+        # Check if there missing age groups
+                elif len(set(grps_num_list)) != 1:
+                    data_ageGrp_id.setErrorMessage("At least one Region is missing an Age Group")
 
         return
 
@@ -239,19 +293,17 @@ class RST:
         rates_per = int(rates_per.valueAsText)
 
         # Get the age group distribution
-        age_std_groups_arr = age_std_group_names = []
+        age_std_groups_arr = []
+        age_std_groups_names = []
         if age_std_groups.values is not None:
-            age_std_groups_dict = {}
-            for grp_name, age_grp in age_std_groups.values:
-                if grp_name in age_std_groups_dict:
-                    age_std_groups_dict[grp_name].append(age_grp)
-                else:
-                    age_std_groups_dict[grp_name] = [age_grp]
-            age_std_groups_arr = list(age_std_groups_dict.values())
-            age_std_group_names = list(age_std_groups_dict.keys())
+            for lv, uv, in age_std_groups.values:
+                lv_index = [i for i, grp in enumerate(helpers.const_age_grps) if grp.startswith(lv)][0]
+                uv_index = [i for i, grp in enumerate(helpers.const_age_grps) if grp.endswith(uv)][0]
+                age_std_groups_arr.append(helpers.const_age_grps[lv_index:(uv_index + 1)])
+                age_std_groups_names.append( lv + ("to" + uv if uv != "85up" else "up") )
 
         # Read in data
-        data = pd.DataFrame(data = arcpy.da.SearchCursor(data_url.valueAsText, data_fields_str), columns = data_fields_str)
+        data = helpers.get_pandas(data_url.valueAsText, data_fields_str)
         age_groups = [""]
         num_group = 1
         data = data.sort_values(by = [data_region_id_str])
@@ -261,23 +313,9 @@ class RST:
             data = data.sort_values(by = [data_region_id_str, data_ageGrp_id.valueAsText])
             age_groups = data[data_ageGrp_id.valueAsText].unique().tolist()
             num_group = data[data_ageGrp_id.valueAsText].nunique()
-
-        arcpy.AddMessage("Validating arguments ...")
-        # Check if age_std_groups contains age groups that the data does not
-        flat_age_std_groups = {age_grp for group in age_std_groups_arr for age_grp in group}
-        if not flat_age_std_groups.issubset(set(age_groups)):
-            err = "Constituent Age Group not present in Input Table"
-            arcpy.AddError(err)
-            raise ValueError(err)
-
-        # Check if data and feature regions are identical
-        feature_regions = pd.DataFrame(data = arcpy.da.SearchCursor(feature_url.valueAsText, [feature_region_id_str]), columns = [feature_region_id_str])
-        feature_regions = feature_regions[feature_region_id_str].unique().tolist()
-        feature_regions.sort()
-        if len(feature_regions) != len(regions) or feature_regions != regions:
-            err = "Input Table and Input Feature do not have an identical regions"
-            arcpy.AddError(err)
-            raise ValueError(err)
+        elif num_region != len(data.index):
+            data = data.groupby(data_region_id_str).agg({data_event_id_str : 'sum', data_pop_id_str : "sum"})
+            messages.addWarningMessage("Repeated Region IDs were detected. Population and Event Counts were aggregated to totals.")
         
         Y = np.array(data[data_event_id_str]).reshape([num_region, num_group])
         n = np.array(data[data_pop_id_str]).reshape([num_region, num_group])
@@ -322,7 +360,7 @@ class RST:
         if age_std_groups.values is not None:
             for ages in age_std_groups_arr:
                 output = helpers.age_std(output, age_groups, std_pop, ages)
-            age_groups.extend(age_std_group_names)
+            age_groups.extend(age_std_groups_names)
         
         medians, ci_chart, reliable = helpers.get_medians(output, regions, age_groups)
 
@@ -333,7 +371,7 @@ class RST:
             ci_chart = ci_chart.add_prefix("maxCI_")
             reliable = reliable.add_prefix("reliable_")
             output = pd.concat([medians, ci_chart, reliable], axis = 1)
-            for i in range(len(medians.columns)):
+            for i, med in enumerate(medians.columns):
                 output_cols.extend([ medians.columns[i], ci_chart.columns[i], reliable.columns[i] ])
             output = output[output_cols].reset_index()
         else:
