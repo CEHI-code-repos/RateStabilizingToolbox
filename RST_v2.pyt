@@ -116,6 +116,7 @@ class RST:
             direction="Input"
         )
         param_rates_per.columns = [['Long', 'Per']]
+        param_rates_per.values = [[100000]]
         param_rates_per.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         params = [
