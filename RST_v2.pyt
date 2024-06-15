@@ -15,7 +15,7 @@ class Toolbox:
         self.alias = "RST"
 
         # List of tool classes associated with this toolbox
-        self.tools = [RST]
+        self.tools = [RST, IDP]
 
 
 class RST:
@@ -391,4 +391,208 @@ class RST:
     def postExecute(self, parameters):
         """This method takes place after outputs are processed and
         added to the display."""
+        return
+
+class IDP:
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "Individual Data Processing"
+        self.description = ""
+
+    def getParameterInfo(self):
+        """Define the tool parameters."""
+
+        param_byAge = arcpy.Parameter(
+            displayName="By Age",
+            name="ByAge",
+            datatype="GPBoolean",
+            parameterType="Required",
+            direction="Input"
+        )
+        param_byAge.value = True
+
+        param_idv_data = arcpy.Parameter(
+            displayName="Input Individual Data",
+            name="InputIndividualData",
+            datatype="GPTableView",
+            parameterType="Required",
+            direction="Input"
+        )
+
+        param_idvWAge_data_fields = arcpy.Parameter(
+            displayName="Input Individual Data Fields",
+            name="InputIndividualDataFieldsWAge",
+            datatype="GPValueTable",
+            parameterType="Optional",
+            direction="Input"
+        )
+        param_idvWAge_data_fields.parameterDependencies = [param_idv_data.name]
+        param_idvWAge_data_fields.columns = [['Field', 'Region ID'], ['Field', 'Age']]
+        param_idvWAge_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
+        
+        param_idvWOAge_data_fields = arcpy.Parameter(
+            displayName="Input Individual Data Fields",
+            name="InputIndividualDataFieldsWOAge",
+            datatype="GPValueTable",
+            parameterType="Optional",
+            direction="Input"
+        )
+        param_idvWOAge_data_fields.parameterDependencies = [param_idv_data.name]
+        param_idvWOAge_data_fields.columns = [['Field', 'Region ID']]
+        param_idvWOAge_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
+        param_idvWOAge_data_fields.enabled = False
+
+        param_pop_data = arcpy.Parameter(
+            displayName="Input Population Data",
+            name="InputPopulationData",
+            datatype="GPTableView",
+            parameterType="Required",
+            direction="Input"
+        )
+
+        param_popWAge_data_fields = arcpy.Parameter(
+            displayName="Input Population Data Fields",
+            name="InputPopulationDataFieldsWAge",
+            datatype="GPValueTable",
+            parameterType="Optional",
+            direction="Input"
+        )
+        param_popWAge_data_fields.parameterDependencies = [param_pop_data.name]
+        param_popWAge_data_fields.columns = [['Field', 'Region ID'], ['Field', 'Population Count'], ['Field', 'Age Group']]
+        param_popWAge_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
+        
+        param_popWOAge_data_fields = arcpy.Parameter(
+            displayName="Input Population Data Fields",
+            name="InputPopulationDataFieldsWOAge",
+            datatype="GPValueTable",
+            parameterType="Optional",
+            direction="Input"
+        )
+        param_popWOAge_data_fields.parameterDependencies = [param_pop_data.name]
+        param_popWOAge_data_fields.columns = [['Field', 'Region ID'], ['Field', 'Population Count']]
+        param_popWOAge_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
+        param_popWOAge_data_fields.enabled = False
+
+        param_out_table = arcpy.Parameter(
+            displayName="Output Table",
+            name="OutputTable",
+            datatype="GPTableView",
+            parameterType="Required",
+            direction="Output"
+        )
+
+        params = [
+            param_byAge,
+            param_idv_data,
+            param_idvWAge_data_fields,
+            param_idvWOAge_data_fields,
+            param_pop_data,
+            param_popWAge_data_fields,
+            param_popWOAge_data_fields,
+            param_out_table
+        ]
+
+        return params
+
+    def isLicensed(self):
+        """Set whether the tool is licensed to execute."""
+
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        
+        byAge = parameters[0]
+        idv_data_url = parameters[1]
+        idvWAge_data_fields = parameters[2]
+        idvWOAge_data_fields = parameters[3]
+        pop_data_url = parameters[4]
+        popWAge_data_fields = parameters[5]
+        popWOAge_data_fields = parameters[6]
+        out_table = parameters[7]
+
+        idvWAge_data_fields.enabled = byAge.value
+        idvWOAge_data_fields.enabled = not byAge.value
+        popWAge_data_fields.enabled = byAge.value
+        popWOAge_data_fields.enabled = not byAge.value
+
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter. This method is called after internal validation."""
+
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+
+        byAge = parameters[0]
+        idv_data_url = parameters[1]
+        idvWAge_data_fields = parameters[2]
+        idvWOAge_data_fields = parameters[3]
+        pop_data_url = parameters[4]
+        popWAge_data_fields = parameters[5]
+        popWOAge_data_fields = parameters[6]
+        out_table = parameters[7]
+
+        # Process individual data fields
+        idv_data_fields_str = None
+        idv_data_region_field = None
+        idv_data_age_field = None
+        if byAge.value:
+            idv_data_fields_str = [str(field) for field in idvWAge_data_fields.values[0]]
+            idv_data_age_field = idv_data_fields_str[1]
+        else:
+            idv_data_fields_str = [str(field) for field in idvWOAge_data_fields.values[0]]
+        idv_data_region_field = idv_data_fields_str[0]
+
+        # Process population data
+        pop_data_fields_str = None
+        pop_data_region_field = None
+        pop_data_pop_field = None
+        pop_data_age_field = None
+        if byAge.value:
+            pop_data_fields_str = [str(field) for field in popWAge_data_fields.values[0]]
+            pop_data_age_field = pop_data_fields_str[2]
+        else:
+            pop_data_fields_str = [str(field) for field in popWOAge_data_fields.values[0]]
+        pop_data_region_field = pop_data_fields_str[0]
+        pop_data_pop_field = pop_data_fields_str[1]
+
+        idv_data = helpers.get_pandas(idv_data_url.valueAsText, idv_data_fields_str)
+        pop_data = helpers.get_pandas(pop_data_url.valueAsText, pop_data_fields_str)
+
+        idv_data_groups = None
+        pop_data_groups = None
+        output_cols = None
+        if byAge.value:
+            idv_data["AgeGroup"] = idv_data[idv_data_age_field].apply(helpers.categorize_age)
+            idv_data_groups = [idv_data_region_field, "AgeGroup"]
+            pop_data_groups = [pop_data_region_field, pop_data_age_field]
+            output_cols = ["RegionID", "AgeGroup", "EventCount", "PopCount"]
+        else:
+            idv_data_groups = [idv_data_region_field]
+            pop_data_groups = [pop_data_region_field]
+            output_cols = ["RegionID", "EventCount", "PopCount"]
+        
+        event_data = idv_data.groupby(idv_data_groups, as_index= False).size()
+        event_data = event_data.merge(pop_data, 
+            right_on= pop_data_groups, 
+            left_on= idv_data_groups, 
+            how = "right")
+        event_data["EventCount"] = event_data["size"].fillna(value=0).astype(int)
+        event_data = event_data[pop_data_groups + ["EventCount", pop_data_pop_field]]
+        
+        output_np = np.rec.fromrecords(event_data, names = output_cols)
+        arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
+
+        return
+
+    def postExecute(self, parameters):
+        """This method takes place after outputs are processed and
+        added to the display."""
+
         return

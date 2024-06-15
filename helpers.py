@@ -127,3 +127,25 @@ def get_fieldAsList(url, fieldName):
     if exists(url) and fieldName is not None and get_fieldType(url, fieldName):
         return [val[0] for val in arcpy.da.SearchCursor(url, fieldName)]
     return None
+   
+def categorize_age(age):
+    if age <= 4:
+        return "0-4"
+    elif age <= 14:
+        return "5-14"
+    elif age <= 24:
+        return "15-24"
+    elif age <= 34:
+        return "25-34"
+    elif age <= 44:
+        return "35-44"
+    elif age <= 54:
+        return "45-54"
+    elif age <= 64:
+        return "55-64"
+    elif age <= 74:
+        return "65-74"
+    elif age <= 84:
+        return "75-84"
+    else:
+        return "85up"
