@@ -180,8 +180,10 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
 
-        data_region_id_str = data_event_id_str = data_pop_id_str = None
-        
+        data_fields_str = None
+        data_region_id_str = None
+        data_event_id_str = None
+        data_pop_id_str = None
         if data_fields.values is not None:
             data_fields_str = [str(field) for field in data_fields.values[0]]
             data_region_id_str = data_fields_str[0]
@@ -266,6 +268,21 @@ class RST:
         # Check if there missing age groups
                 elif len(set(grps_num_list)) != 1:
                     data_ageGrp_id.setErrorMessage("At least one Region is missing an Age Group")
+        
+        # Check if data table contains Nulls
+        if data_fields_str:
+            data_filled_fields = [field for field in data_fields_str if field != ""]
+            data = helpers.get_pandas(data_url.value, data_filled_fields)
+            idv_data_nulls = data.isna().any()
+            idv_data_null_fields = [field for field, isNa in idv_data_nulls.items() if isNa]
+            if idv_data_nulls.any():
+                data_fields.setErrorMessage("Input Table field " + idv_data_null_fields[0] + " contains at least one Null value")
+        
+        # Check if feature contains Nulls
+        if feature_region_id_str:
+            feature_data = helpers.get_pandas(feature_url.value, [feature_region_id_str])
+            if feature_data.isna().any().any():
+                feature_fields.setErrorMessage("Input Feature field " + feature_region_id_str + " contains at least one Null value")
 
         return
 
@@ -533,6 +550,42 @@ class IDP:
         popWOAge_data_fields = parameters[6]
         out_table = parameters[7]
 
+        # Process individual data fields
+        idv_data_fields_str = None
+        idv_data_region_id_str = None
+        idv_data_age_id_str = None
+        if byAge.value and idvWAge_data_fields.values is not None:
+            idv_data_fields_str = [str(field) for field in idvWAge_data_fields.values[0]]
+            idv_data_age_id_str = idv_data_fields_str[1]
+            idv_data_region_id_str = idv_data_fields_str[0]
+        elif not byAge.value and idvWOAge_data_fields.values is not None:
+            idv_data_fields_str = [str(field) for field in idvWOAge_data_fields.values[0]]
+            idv_data_region_id_str = idv_data_fields_str[0]
+
+        # Process population data
+        pop_data_fields_str = None
+        pop_data_region_id_str = None
+        pop_data_pop_id_str = None
+        pop_data_age_id_str = None
+        if byAge.value and popWAge_data_fields.values is not None:
+            pop_data_fields_str = [str(field) for field in popWAge_data_fields.values[0]]
+            pop_data_age_id_str = pop_data_fields_str[2]
+            pop_data_region_id_str = pop_data_fields_str[0]
+            pop_data_pop_id_str = pop_data_fields_str[1]
+        elif not byAge.value and popWOAge_data_fields.values is not None:
+            pop_data_fields_str = [str(field) for field in popWOAge_data_fields.values[0]]
+            pop_data_region_id_str = pop_data_fields_str[0]
+            pop_data_pop_id_str = pop_data_fields_str[1]
+
+        # Get enabled fields
+        idv_data_fields = pop_data_fields = None
+        if byAge.value:
+            idv_data_fields = idvWAge_data_fields
+            pop_data_fields = popWAge_data_fields
+        else:
+            idv_data_fields = idvWOAge_data_fields
+            pop_data_fields = popWOAge_data_fields
+
         # Make field parameters required based on off byAge
         if byAge.value:
             helpers.set_valueTableRequired(idvWAge_data_fields)
@@ -540,6 +593,86 @@ class IDP:
         else:
             helpers.set_valueTableRequired(idvWOAge_data_fields)
             helpers.set_valueTableRequired(popWOAge_data_fields)
+
+        idv_region_id_type = helpers.get_fieldType(idv_data_url.valueAsText, idv_data_region_id_str)
+        pop_region_id_type = helpers.get_fieldType(pop_data_url.valueAsText, pop_data_region_id_str)
+        idv_regions = helpers.get_fieldAsList(idv_data_url.valueAsText, idv_data_region_id_str)
+        pop_regions = helpers.get_fieldAsList(pop_data_url.valueAsText, pop_data_region_id_str)
+        # Check if Region ID types are the same
+        if idv_region_id_type and pop_region_id_type and idv_region_id_type != pop_region_id_type:
+            idv_data_fields.setErrorMessage("Input Individual Data Region ID field type does not match Input Population Table Region ID field type")
+        elif idv_regions and pop_regions:
+            idv_regions_set = set(idv_regions)
+            pop_regions_set = set(pop_regions)
+            regions_only_idv = idv_regions_set - pop_regions_set
+            regions_only_pop = pop_regions_set - idv_regions_set
+        # Check if Individual data contains regions not present in Population data
+            if regions_only_idv:
+                idv_data_fields.setErrorMessage(idv_data_region_id_str + ' "' + str(list(regions_only_idv)[0]) + '" not present in Input Population Data ' + pop_data_region_id_str)
+        # Check if Population data contains regions not present in Individual data
+            elif regions_only_pop:
+                pop_data_fields.setErrorMessage(pop_data_region_id_str + ' "' + str(list(regions_only_pop)[0]) + '" not present in Input Individual Data ' + idv_data_region_id_str)
+        
+        # Check if Age is a an integer
+        idv_age_id_type = helpers.get_fieldType(idv_data_url.valueAsText, idv_data_age_id_str)
+        if byAge.value and idv_age_id_type and idv_age_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
+            idvWAge_data_fields.setErrorMessage("Age field type is not an Integer")
+
+        # Check if Population Count is an integer
+        pop_pop_id_type = helpers.get_fieldType(pop_data_url.valueAsText, pop_data_pop_id_str)
+        if pop_pop_id_type and pop_pop_id_type not in ["SmallInteger", "Integer", "BigInteger"]:
+             pop_data_fields.setErrorMessage("Population Count field type is not an Integer")
+
+        # Check if Output Table exists
+        if helpers.exists(out_table.valueAsText):
+            out_table.setErrorMessage("Output Table already exists")
+        
+        # Check if Age Group is a string
+        pop_ageGrp_id_type = helpers.get_fieldType(pop_data_url.valueAsText, pop_data_age_id_str)
+        ageGrp_column = helpers.get_fieldAsList(pop_data_url.valueAsText, pop_data_age_id_str)
+        if byAge.value and pop_ageGrp_id_type and pop_ageGrp_id_type != "String":
+            popWAge_data_fields.setErrorMessage("Age Group field type is not a String")
+        elif byAge.value and ageGrp_column:
+            age_groups = list(set(ageGrp_column))
+            grp_not_in_consts = [group for group in age_groups if group not in helpers.const_age_grps]
+        # Check if invalid age groups are present
+            if grp_not_in_consts:
+                popWAge_data_fields.setErrorMessage('Age Group "' + grp_not_in_consts[0] + '" is not a valid age group')
+            elif pop_regions:
+                regions_grp_dict = {}
+                for i, region in enumerate(pop_regions):
+                    if region in regions_grp_dict:
+                        regions_grp_dict[region].append(ageGrp_column[i])
+                    else:
+                        regions_grp_dict[region] = [ageGrp_column[i]]
+                unique_grps_num_list = [len(set(regions_grp_dict[region])) for region in regions_grp_dict]
+                grps_num_list = [len(regions_grp_dict[region]) for region in regions_grp_dict]
+        # Check if there duplicate age groups
+                if unique_grps_num_list != grps_num_list:
+                    popWAge_data_fields.setErrorMessage("At least one Age Group is duplicated within a Region")
+        # Check if there missing age groups
+                elif len(set(grps_num_list)) != 1:
+                    popWAge_data_fields.setErrorMessage("At least one Region is missing an Age Group")
+        
+        # Check if individual data table contains Nulls
+        if idv_data_fields_str:
+            idv_filled_fields = [field for field in idv_data_fields_str if field != ""]
+            idv_data = helpers.get_pandas(idv_data_url.value, idv_filled_fields)
+            idv_data_nulls = idv_data.isna().any()
+            idv_data_null_fields = [field for field, isNa in idv_data_nulls.items() if isNa]
+            if idv_data_nulls.any():
+                idv_data_fields.setErrorMessage("Input Individual Data field " + idv_data_null_fields[0] + " contains at least one Null value")
+        
+        
+        # Check if population data table contains Nulls
+        if pop_data_fields_str:
+            pop_filled_fields = [field for field in pop_data_fields_str if field != ""]
+            pop_data = helpers.get_pandas(pop_data_url.value, pop_filled_fields)
+            pop_data_nulls = pop_data.isna().any()
+            pop_data_null_fields = [field for field, isNa in pop_data_nulls.items() if isNa]
+            if pop_data_nulls.any():
+                pop_data_fields.setErrorMessage("Input Population Data field " + pop_data_null_fields[0] + " contains at least one Null value")
+
 
         return
 
@@ -557,27 +690,27 @@ class IDP:
 
         # Process individual data fields
         idv_data_fields_str = None
-        idv_data_region_field = None
-        idv_data_age_field = None
+        idv_data_region_id_str = None
+        idv_data_age_id_str = None
         if byAge.value:
             idv_data_fields_str = [str(field) for field in idvWAge_data_fields.values[0]]
-            idv_data_age_field = idv_data_fields_str[1]
+            idv_data_age_id_str = idv_data_fields_str[1]
         else:
             idv_data_fields_str = [str(field) for field in idvWOAge_data_fields.values[0]]
-        idv_data_region_field = idv_data_fields_str[0]
+        idv_data_region_id_str = idv_data_fields_str[0]
 
         # Process population data
         pop_data_fields_str = None
-        pop_data_region_field = None
-        pop_data_pop_field = None
-        pop_data_age_field = None
+        pop_data_region_id_str = None
+        pop_data_pop_id_str = None
+        pop_data_age_id_str = None
         if byAge.value:
             pop_data_fields_str = [str(field) for field in popWAge_data_fields.values[0]]
-            pop_data_age_field = pop_data_fields_str[2]
+            pop_data_age_id_str = pop_data_fields_str[2]
         else:
             pop_data_fields_str = [str(field) for field in popWOAge_data_fields.values[0]]
-        pop_data_region_field = pop_data_fields_str[0]
-        pop_data_pop_field = pop_data_fields_str[1]
+        pop_data_region_id_str = pop_data_fields_str[0]
+        pop_data_pop_id_str = pop_data_fields_str[1]
 
         idv_data = helpers.get_pandas(idv_data_url.valueAsText, idv_data_fields_str)
         pop_data = helpers.get_pandas(pop_data_url.valueAsText, pop_data_fields_str)
@@ -586,13 +719,13 @@ class IDP:
         pop_data_groups = None
         output_cols = None
         if byAge.value:
-            idv_data["AgeGroup"] = idv_data[idv_data_age_field].apply(helpers.categorize_age)
-            idv_data_groups = [idv_data_region_field, "AgeGroup"]
-            pop_data_groups = [pop_data_region_field, pop_data_age_field]
+            idv_data["AgeGroup"] = idv_data[idv_data_age_id_str].apply(helpers.categorize_age)
+            idv_data_groups = [idv_data_region_id_str, "AgeGroup"]
+            pop_data_groups = [pop_data_region_id_str, pop_data_age_id_str]
             output_cols = ["RegionID", "AgeGroup", "EventCount", "PopCount"]
         else:
-            idv_data_groups = [idv_data_region_field]
-            pop_data_groups = [pop_data_region_field]
+            idv_data_groups = [idv_data_region_id_str]
+            pop_data_groups = [pop_data_region_id_str]
             output_cols = ["RegionID", "EventCount", "PopCount"]
         
         event_data = idv_data.groupby(idv_data_groups, as_index= False).size()
@@ -601,7 +734,7 @@ class IDP:
             left_on= idv_data_groups, 
             how = "right")
         event_data["EventCount"] = event_data["size"].fillna(value=0).astype(int)
-        event_data = event_data[pop_data_groups + ["EventCount", pop_data_pop_field]]
+        event_data = event_data[pop_data_groups + ["EventCount", pop_data_pop_id_str]]
         
         output_np = np.rec.fromrecords(event_data, names = output_cols)
         arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
