@@ -535,33 +535,11 @@ class IDP:
 
         # Make field parameters required based on off byAge
         if byAge.value:
-            if idvWAge_data_fields.values is None:
-                idvWAge_data_fields.setIDMessage('ERROR', 530)
-            else:
-                idv_data_fields_str = [str(field) for field in idvWAge_data_fields.values[0]]
-                if "" in idv_data_fields_str:
-                    idvWAge_data_fields.setIDMessage('ERROR', 530)
-
-            if popWAge_data_fields.values is None:
-                popWAge_data_fields.setIDMessage('ERROR', 530)
-            else:
-                pop_data_fields_str = [str(field) for field in popWAge_data_fields.values[0]]
-                if "" in pop_data_fields_str:
-                    popWAge_data_fields.setIDMessage('ERROR', 530)
+            helpers.set_ValueTableRequired(idvWAge_data_fields)
+            helpers.set_ValueTableRequired(popWAge_data_fields)
         else:
-            if idvWOAge_data_fields.values is None:
-                idvWOAge_data_fields.setIDMessage('ERROR', 530)
-            else:
-                idv_data_fields_str = [str(field) for field in idvWOAge_data_fields.values[0]]
-                if "" in idv_data_fields_str:
-                    idvWOAge_data_fields.setIDMessage('ERROR', 530)
-            
-            if popWOAge_data_fields.values is None:
-                popWOAge_data_fields.setIDMessage('ERROR', 530)
-            else:
-                pop_data_fields_str = [str(field) for field in popWOAge_data_fields.values[0]]
-                if "" in pop_data_fields_str:
-                    popWOAge_data_fields.setIDMessage('ERROR', 530)
+            helpers.set_ValueTableRequired(idvWOAge_data_fields)
+            helpers.set_ValueTableRequired(popWOAge_data_fields)
 
         return
 
