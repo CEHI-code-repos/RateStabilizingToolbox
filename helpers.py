@@ -150,10 +150,14 @@ def categorize_age(age):
     else:
         return "85up"
     
-def set_ValueTableRequired(valueTable):
+def set_valueTableRequired(valueTable):
     if valueTable.values is None:
         valueTable.setIDMessage('ERROR', 530)
     else:
-        valueTable_str = [str(field) for field in valueTable.values[0]]
+        valueTable_str = [str(val) for row in valueTable.values for val in row]
         if "" in valueTable_str:
             valueTable.setIDMessage('ERROR', 530)
+
+def set_parameterRequired(parameter):
+    if parameter.value is None:
+        parameter.setIDMessage('ERROR', 530)

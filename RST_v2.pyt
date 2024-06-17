@@ -195,11 +195,11 @@ class RST:
 
         # Check if all fields are filled in for age standardization
         if data_ageGrp_id.valueAsText is None and (std_pop_yr.valueAsText is not None or age_std_groups.valueAsText is not None):
-            data_ageGrp_id.setErrorMessage("Age Group Field necessary for age standardization")
+            helpers.set_parameterRequired(data_ageGrp_id)
         if std_pop_yr.valueAsText is None and (data_ageGrp_id.valueAsText is not None or age_std_groups.valueAsText is not None):
-            std_pop_yr.setErrorMessage("Standard Population Year necessary for age standardization")
+            helpers.set_parameterRequired(std_pop_yr)
         if age_std_groups.valueAsText is None and (data_ageGrp_id.valueAsText is not None or std_pop_yr.valueAsText is not None):
-            age_std_groups.setErrorMessage("Age Groups necessary for age standardization")
+            helpers.set_valueTableRequired(age_std_groups)
 
         data_region_id_type = helpers.get_fieldType(data_url.valueAsText, data_region_id_str)
         feature_region_id_type = helpers.get_fieldType(data_url.valueAsText, feature_region_id_str)
@@ -535,11 +535,11 @@ class IDP:
 
         # Make field parameters required based on off byAge
         if byAge.value:
-            helpers.set_ValueTableRequired(idvWAge_data_fields)
-            helpers.set_ValueTableRequired(popWAge_data_fields)
+            helpers.set_valueTableRequired(idvWAge_data_fields)
+            helpers.set_valueTableRequired(popWAge_data_fields)
         else:
-            helpers.set_ValueTableRequired(idvWOAge_data_fields)
-            helpers.set_ValueTableRequired(popWOAge_data_fields)
+            helpers.set_valueTableRequired(idvWOAge_data_fields)
+            helpers.set_valueTableRequired(popWOAge_data_fields)
 
         return
 
