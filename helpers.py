@@ -1,6 +1,7 @@
 import arcpy
 import numpy as np
 import pandas as pd
+from collections import namedtuple
 from param_updates import *
 
 ## Model helpers
@@ -106,6 +107,8 @@ def get_medians(output, regions, ages):
 
 const_age_grps = ["0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up"]
 
+field_info = namedtuple("field_info", ["name", "type", "list", "exists"])
+
 def exists(url):
     if url is not None and arcpy.Exists(url):
         return True
@@ -113,42 +116,34 @@ def exists(url):
 
 def get_fieldType(url, fieldName):
     if exists(url) and fieldName is not None:
-        age_groups_field = [f.type for f in arcpy.ListFields(url) if f.name == fieldName]
-        if len(age_groups_field) == 1:
-            return age_groups_field[0]
+        field_type = [f.type for f in arcpy.ListFields(url) if f.name == fieldName]
+        if len(field_type) == 1:
+            return field_type[0]
+    return None
+
+def get_fieldList(url, fieldName):
+    if get_fieldType(url, fieldName) is not None:
+        return [val[0] for val in arcpy.da.SearchCursor(url, fieldName)]
     return None
         
 def get_pandas(url, fields):
     if exists(url) and fields is not None:
-        return pd.DataFrame(data = arcpy.da.SearchCursor(url, fields), columns = fields)
+        valid_fields = [f for f in arcpy.ListFields(url) if f.name in fields]
+        if len(valid_fields) == len(fields):
+            return pd.DataFrame(data = arcpy.da.SearchCursor(url, fields), columns = fields)
     return None
 
-def get_fieldAsList(url, fieldName):
-    if exists(url) and fieldName is not None and get_fieldType(url, fieldName):
-        return [val[0] for val in arcpy.da.SearchCursor(url, fieldName)]
-    return None
-   
-def categorize_age(age):
-    if age <= 4:
-        return "0-4"
-    elif age <= 14:
-        return "5-14"
-    elif age <= 24:
-        return "15-24"
-    elif age <= 34:
-        return "25-34"
-    elif age <= 44:
-        return "35-44"
-    elif age <= 54:
-        return "45-54"
-    elif age <= 64:
-        return "55-64"
-    elif age <= 74:
-        return "65-74"
-    elif age <= 84:
-        return "75-84"
+def get_valueTableNames(valueTable):
+    if valueTable.values is not None:
+        return [str(field) for field in valueTable.values[0]]
     else:
-        return "85up"
+        return [None for i, col in enumerate(valueTable.columns)]
+
+def get_fieldInfo(url, fieldName):
+    fieldType = get_fieldType(url, fieldName)
+    fieldList = get_fieldList(url, fieldName)
+    exists = fieldType is not None
+    return field_info(fieldName, fieldType, fieldList, exists)
     
 def set_valueTableRequired(valueTable):
     if valueTable.values is None:
@@ -161,3 +156,15 @@ def set_valueTableRequired(valueTable):
 def set_parameterRequired(parameter):
     if parameter.value is None:
         parameter.setIDMessage('ERROR', 530)
+
+def categorize_age(age):
+    if age <= 4: return "0-4"
+    elif age <= 14: return "5-14"
+    elif age <= 24: return "15-24"
+    elif age <= 34: return "25-34"
+    elif age <= 44: return "35-44"
+    elif age <= 54: return "45-54"
+    elif age <= 64: return "55-64"
+    elif age <= 74: return "65-74"
+    elif age <= 84: return "75-84"
+    else: return "85up"
