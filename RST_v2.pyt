@@ -156,9 +156,9 @@ class RST:
         if data_ageGrp_info.exists:
             ageGrp_unique = list(set(data_ageGrp_info.list))
 
-            grp_not_in_consts = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
+            grp_notValid = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
 
-            if grp_not_in_consts is None:
+            if len(grp_notValid) == 0:
                 lvs = sorted([int(group.split("-")[0]) for group in ageGrp_unique if group != "85up"])
                 uvs = sorted([int(group.split("-")[1]) if group != "85up" else 85 for group in ageGrp_unique])
                 age_std_groups.filters[0].list = [str(lv) for lv in lvs[:-1]]
