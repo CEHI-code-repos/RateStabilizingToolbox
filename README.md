@@ -60,15 +60,15 @@ stratified data age groups must be spelled EXACTLY as written above.
 > age stratified population data to generate a non age stratified output
 > table, check your population dataset for duplicate regions.
 >
-> <img src="warning_IDP.png" data-fig-align="center" />
+> <img src="photos/warning_IDP.png" data-fig-align="center" />
 
 #### Examples
 
 Non Age Stratified Example:  
-<img src="crude_IDP.png" data-fig-align="center" />
+<img src="photos/crude_IDP.png" data-fig-align="center" />
 
 Age Stratified Example:  
-<img src="ageStd_IDP.png" data-fig-align="center" />
+<img src="photos/ageStd_IDP.png" data-fig-align="center" />
 
 ### Rate Stabilizing Tool
 
@@ -91,7 +91,7 @@ areas with small population sizes or small counts.
   - **Population Count** (Required) - Integer population within region
     among the total population or if applicable, among an age group
 - **Input Feature** (Required) - Polygon feature of geographic areas
-  within the input table.
+  within the input table. (See `TestData.gdb/MI_CARTO` or `TestData.gdb/MI_TIGER` for an example)
 - **Input Feature Field**
   - **Region ID** (Required) - String or integer field uniquely
     identifying each geographic area.
@@ -131,12 +131,12 @@ areas with small population sizes or small counts.
 > age stratified data to generate crude rates, check your population
 > dataset for duplicate regions.
 >
-> <img src="warning_RST.png" data-fig-align="center" />
+> <img src="photos/warning_RST.png" data-fig-align="center" />
 
 #### Examples
 
 Crude Rate Example:  
-<img src="crude_RST.png" data-fig-align="center" />
+<img src="photos/crude_RST.png" data-fig-align="center" />
 
 Age Standardized Rates Example:  
-<img src="ageStd_RST.png" data-fig-align="center" />
+<img src="photos/ageStd_RST.png" data-fig-align="center" />
