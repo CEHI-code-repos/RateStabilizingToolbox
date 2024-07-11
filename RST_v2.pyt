@@ -461,6 +461,25 @@ class IDP:
         param_popWOAge_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
         param_popWOAge_data_fields.enabled = False
 
+        param_ftr = arcpy.Parameter(
+            displayName="Input Feature",
+            name="InputFeature",
+            datatype="GPFeatureLayer",
+            parameterType="Required",
+            direction="Input"
+        )
+        
+        param_ftr_fields = arcpy.Parameter(
+            displayName="Input Feature Fields",
+            name="InputFeatureFields",
+            datatype="GPValueTable",
+            parameterType="Required",
+            direction="Input"
+        )
+        param_ftr_fields.parameterDependencies = [param_ftr.name]
+        param_ftr_fields.columns = [['Field', 'Region ID']]
+        param_ftr_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
+
         param_out_table = arcpy.Parameter(
             displayName="Output Table",
             name="OutputTable",
@@ -477,6 +496,8 @@ class IDP:
             param_pop_data,
             param_popWAge_data_fields,
             param_popWOAge_data_fields,
+            param_ftr,
+            param_ftr_fields,
             param_out_table
         ]
 
@@ -499,7 +520,9 @@ class IDP:
         pop_data_url = parameters[4]
         popWAge_data_fields = parameters[5]
         popWOAge_data_fields = parameters[6]
-        out_table = parameters[7]
+        ftr_url = parameters[7]
+        ftr_fields = parameters[8]
+        out_table = parameters[9]
 
         idvWAge_data_fields.enabled = byAge.value
         idvWOAge_data_fields.enabled = not byAge.value
@@ -531,7 +554,9 @@ class IDP:
         pop_data_url = parameters[4]
         popWAge_data_fields = parameters[5]
         popWOAge_data_fields = parameters[6]
-        out_table = parameters[7]
+        ftr_url = parameters[7]
+        ftr_fields = parameters[8]
+        out_table = parameters[9]
 
         # Get enabled fields
         if byAge.value:
@@ -548,6 +573,8 @@ class IDP:
         pop_region_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[0])
         pop_pop_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[1])
         pop_ageGrp_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[2] if byAge.value else None)
+        ftr_fields_name = helpers.get_valueTableNames(ftr_fields)
+        ftr_region_info = helpers.get_fieldInfo(ftr_url.valueAsText, ftr_fields_name[0])
         
         # Make field parameters required based on off byAge
         if byAge.value:
@@ -567,7 +594,9 @@ class IDP:
         if pop_pop_info.exists and None in pop_pop_info.list:
             pop_data_fields.setErrorMessage("Input Population Data Population Count Field contains at least one Null value")
         if byAge.value and pop_ageGrp_info.exists and None in pop_ageGrp_info.list:
-            pop_data_fields.setErrorMessage("Input Population Data ID Field contains at least one Null value")
+            pop_data_fields.setErrorMessage("Input Population Data Age Field contains at least one Null value")
+        if ftr_region_info.exists and None in ftr_region_info.list:
+            ftr_fields.setErrorMessage("Input Feature Region ID contains at least one Null value")
         
         # Check if Individual Age is negative
         if byAge.value and idv_age_info.exists and any(age < 0 for age in idv_age_info.list):
@@ -584,27 +613,50 @@ class IDP:
             pop_data_fields.setErrorMessage("Input Population Data Population Count Field is not an Integer")
         if byAge.value and pop_ageGrp_info.exists and pop_ageGrp_info.type not in [ "String"]:
             pop_data_fields.setErrorMessage("Input Population Data ID Field is not an String")
+        if ftr_region_info.exists and ftr_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
+            idv_data_fields.setErrorMessage("Input Feature Region ID Field is not an Integer or String")
 
         # Check if Output Table exists
         if helpers.exists(out_table.valueAsText):
             out_table.setErrorMessage("Output Table already exists")
 
+        # Check Individual and Population data relationships
         if (idv_region_info.exists and pop_region_info.exists and 
             not idv_data_fields.hasError() and not pop_data_fields.hasError()):
             # Check if Region ID types are the same
             if idv_region_info.type != pop_region_info.type:
-                pop_data_fields.setErrorMessage("Input Feature Region ID Field type does not match Input Table Region ID Field type")
+                pop_data_fields.setErrorMessage("Input Population Data Region ID Field type does not match Input Individual Data Region ID Field type")
             else:
-                # Check if Data contains Region IDs not present in Feature
+                # Check if Individual Data contains Region IDs not present in Population Data
                 idv_only_regions = set(idv_region_info.list) - set(pop_region_info.list)
                 if len(idv_only_regions) != 0:
-                    idv_data_fields.setErrorMessage("Input Data Region ID Field contains at least one value not present in Input Feature Region ID Field")
-                # Check if Feature contains Region IDs not present in Data
-                pop_only_regions = set(pop_region_info.list) - set(idv_region_info.list)
+                    idv_data_fields.setWarningMessage("Input Individual Data Region ID Field contains at least one value not present in Input Population Data Region ID Field")
+
+        # Check Population Data and Feature relationships
+        if (pop_region_info.exists and ftr_region_info.exists and
+            not pop_data_fields.hasError() and not ftr_fields.hasError()):
+            # Check if Region ID types are the same
+            if pop_region_info.type != ftr_region_info.type:
+                ftr_fields.setErrorMessage("Input Population Data Region ID Field type does not match Input Feature Region ID Field type")
+            else:
+                # Check if Population Data contains Region IDs not present in Feature
+                pop_only_regions = set(pop_region_info.list) - set(ftr_region_info.list)
+                if len(pop_only_regions) != 0:
+                    pop_data_fields.setErrorMessage("Input Population Data Region ID Field contains at least one value not present in Input Feature Region ID Field")
+                # Check if Feature contains Region IDs not present in Population Data
+                ftr_only_regions = set(ftr_region_info.list) - set(pop_region_info.list)
+                if len(ftr_only_regions) != 0:
+                    ftr_fields.setWarningMessage("Input Feature Region ID Field contains at least one value not present in Input Population Data Region ID Field\n\nPopulation within these regions will be assumed to be 0")
+
+        # Check Individual Data and Feature relationships
+        if (idv_region_info.exists and ftr_region_info.exists and 
+            not idv_data_fields.hasError() and not ftr_fields.hasError()):
+            if idv_region_info.type == ftr_region_info.type:
+                # Check if Individual Data contains Region IDs not present in Population Data
+                idv_only_regions = set(idv_region_info.list) - set(ftr_region_info.list)
                 if len(idv_only_regions) != 0:
-                    pop_data_fields.setErrorMessage("Input Feature Region ID Field contains at least one value not present in Input Table Region ID Field")
+                    idv_data_fields.setErrorMessage("Input Individual Data Region ID Field contains at least one value not present in Feature Region ID Field")
         
-        # # Check if Age Group is a string
         if pop_ageGrp_info.exists and not pop_data_fields.hasError():
             ageGrp_unique = list(set(pop_ageGrp_info.list))
             ageGrp_invalid = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
@@ -636,7 +688,9 @@ class IDP:
         pop_data_url = parameters[4]
         popWAge_data_fields = parameters[5]
         popWOAge_data_fields = parameters[6]
-        out_table = parameters[7]
+        ftr_url = parameters[7]
+        ftr_fields = parameters[8]
+        out_table = parameters[9]
 
         # Get enabled fields
         idv_data_fields = pop_data_fields = None
@@ -654,9 +708,12 @@ class IDP:
         pop_region_name = pop_fields_name[0]
         pop_pop_name = pop_fields_name[1]
         pop_ageGrp_name = pop_fields_name[2] if byAge.value else None
+        ftr_fields_name = helpers.get_valueTableNames(ftr_fields)
+        ftr_region_name = ftr_fields_name[0]
 
         idv_data = helpers.get_pandas(idv_data_url.valueAsText, idv_fields_name)
         pop_data = helpers.get_pandas(pop_data_url.valueAsText, pop_fields_name)
+        ftr_data = helpers.get_pandas(ftr_url.valueAsText, ftr_fields_name)
 
         if byAge.value:
             idv_data["AgeGroup"] = idv_data[idv_age_name].apply(helpers.categorize_age)
@@ -672,6 +729,17 @@ class IDP:
                 pop_data = pop_data.groupby(pop_region_name).agg({pop_pop_name : 'sum'})
                 messages.addWarningMessage("Repeated Region IDs were detected. Population Counts were aggregated to totals.")
 
+        # If there are regions in Feature not in Population Data, set population to 0 and warn
+        if set(pop_data[pop_region_name].unique()) != set(ftr_data[ftr_region_name].unique()):
+            index_names = [pop_region_name]
+            if byAge.value:
+                index_names.append(pop_ageGrp_name)
+                index_vals = [ftr_data[ftr_region_name].unique(), pop_data[pop_ageGrp_name].unique()]
+                index = pd.MultiIndex.from_product(index_vals, names = index_names)
+            else:
+                index = ftr_data[ftr_region_name].unique().tolist()
+            pop_data = pop_data.set_index(index_names).reindex(index, fill_value=0).reset_index()
+            messages.addWarningMessage("Input Feature Region ID Field contains at least one value not present in Input Population Data Region ID Field. Population within these regions were assumed to be 0.")
         
         event_data = idv_data.groupby(idv_data_groups, as_index= False).size()
         event_data = event_data.merge(pop_data, 
@@ -680,7 +748,11 @@ class IDP:
             how = "right")
         event_data["EventCount"] = event_data["size"].fillna(value=0).astype(int)
         event_data = event_data[pop_data_groups + ["EventCount", pop_pop_name]]
-        
+
+        # Check if Event Count is always less than Population count
+        if any(event_data["EventCount"] > event_data[pop_pop_name]):
+            messages.addWarningMessage("Event Count is greater than the Population Count for at least one row.")
+
         output_np = np.rec.fromrecords(event_data, names = output_cols)
         arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
 
