@@ -570,8 +570,8 @@ class IDP:
             pop_data_fields.setErrorMessage("Input Population Data ID Field contains at least one Null value")
         
         # Check if Individual Age is negative
-        if byAge.value and idv_age_info.exists and None in idv_age_info.list:
-            idv_data_fields.setErrorMessage("Input Individual Data Age Field contains at least one Null value")
+        if byAge.value and idv_age_info.exists and any(age < 0 for age in idv_age_info.list):
+            idv_data_fields.setErrorMessage("Input Individual Data Age Field contains at least one negative value")
         
         # Check for data types
         if idv_region_info.exists and idv_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
@@ -584,6 +584,10 @@ class IDP:
             pop_data_fields.setErrorMessage("Input Population Data Population Count Field is not an Integer")
         if byAge.value and pop_ageGrp_info.exists and pop_ageGrp_info.type not in [ "String"]:
             pop_data_fields.setErrorMessage("Input Population Data ID Field is not an String")
+
+        # Check if Output Table exists
+        if helpers.exists(out_table.valueAsText):
+            out_table.setErrorMessage("Output Table already exists")
 
         if (idv_region_info.exists and pop_region_info.exists and 
             not idv_data_fields.hasError() and not pop_data_fields.hasError()):
