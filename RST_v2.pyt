@@ -224,6 +224,10 @@ class RST:
         if helpers.exists(estimates_out.valueAsText):
             estimates_out.setErrorMessage("Output Table already exists")
 
+        # Check if Region IDs are repeated when age is adjusted for
+        if not data_ageGrp_info.exists and data_region_info.exists and len(data_region_info.list) != len(set(data_region_info.list)):
+            data_fields.setWarningMessage("Repeated Input Data Region IDs are detected. Population Counts will be aggregated to totals.")
+
         if (data_region_info.exists and feature_region_info.exists and 
             not data_fields.hasError() and not feature_fields.hasError()):
             # Check if Region ID types are the same
@@ -598,10 +602,6 @@ class IDP:
         if ftr_region_info.exists and None in ftr_region_info.list:
             ftr_fields.setErrorMessage("Input Feature Region ID contains at least one Null value")
         
-        # Check if Individual Age is negative
-        if byAge.value and idv_age_info.exists and any(age < 0 for age in idv_age_info.list):
-            idv_data_fields.setErrorMessage("Input Individual Data Age Field contains at least one negative value")
-        
         # Check for data types
         if idv_region_info.exists and idv_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
             idv_data_fields.setErrorMessage("Input Individual Data Region ID Field is not an Integer or String")
@@ -615,10 +615,18 @@ class IDP:
             pop_data_fields.setErrorMessage("Input Population Data ID Field is not an String")
         if ftr_region_info.exists and ftr_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
             idv_data_fields.setErrorMessage("Input Feature Region ID Field is not an Integer or String")
+        
+        # Check if Individual Age is negative
+        if byAge.value and idv_age_info.exists and not idv_data_fields.hasError() and any(age < 0 for age in idv_age_info.list):
+            idv_data_fields.setErrorMessage("Input Individual Data Age Field contains at least one negative value")
 
         # Check if Output Table exists
         if helpers.exists(out_table.valueAsText):
             out_table.setErrorMessage("Output Table already exists")
+
+        # Check if 
+        if not byAge.value and pop_region_info.exists and len(pop_region_info.list) != len(set(pop_region_info.list)):
+            pop_data_fields.setWarningMessage("Repeated Input Population Data Region IDs are detected. Population Counts will be aggregated to totals if no age standardization is applied.")
 
         # Check Individual and Population data relationships
         if (idv_region_info.exists and pop_region_info.exists and 
@@ -727,7 +735,7 @@ class IDP:
 
             if pop_data[pop_region_name].nunique() != len(pop_data.index):  
                 pop_data = pop_data.groupby(pop_region_name).agg({pop_pop_name : 'sum'})
-                messages.addWarningMessage("Repeated Region IDs were detected. Population Counts were aggregated to totals.")
+                messages.addWarningMessage("Repeated Input Population Data Region IDs were detected. Population Counts were aggregated to totals.")
 
         # If there are regions in Feature not in Population Data, set population to 0 and warn
         if set(pop_data[pop_region_name].unique()) != set(ftr_data[ftr_region_name].unique()):
