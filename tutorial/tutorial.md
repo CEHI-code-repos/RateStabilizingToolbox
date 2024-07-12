@@ -4,7 +4,7 @@
     </a>
 </h1>
 
-#### Files needed for exercise: `RateStabilzingTool2_v0.1.0.zip` 
+#### Files needed for exercise: `RateStabilzingTool2_{versionNumber}.zip` 
 
 #### Goal: Use the Rate Stabilizing Tool (RST) to produce easily mapped age-standardize, smoothed county estimates.
 
@@ -20,14 +20,18 @@
     b.  Extract the zipped file to your workspace
 2.  Create a new ArcGIS Pro Map Project
 3.  Within the main ribbon, select **View** and open the **Catalog Pane**
+    ![](photos/CatalogPane.png)
 4.  Right click on the **Toolboxes** folder and select **Add Toolbox**
+    ![](photos/AddToolbox.png)
 5.  Navigate to the location where you extracted the toolbox and select `RST_v2.pyt`
 6.  The Rate Stabilizing Toolbox will now appear; expand the toolbox to reveal the Individual Data Processing and Rate Stabilizing tools
 
 ## Adding Your Data
 1.  Within the **Catalog Pane**, right click on the **Databases** folder and select **Add Database**
+    ![](photos/AddDatabase.png)
 2.  Navigate the tutorial folder of the extracted zip file and select `tutorial.gdb`; expand the toolbox to reveal the example datasets
 3.  Right click on the `MI_mort_indiv` table and **Add to New** -> **Map**; repeat for **MI_pop_grouped** and **MI_carto**, but this time select **Add to Current Map**
+    ![](photos/AddToNewMap.png)
 4.  Within the **Contents** pane, right click on each of the tables and click **Open**
 5.  Notice that individual data table has only two fields
     -   *GEOID* - An unique identifier for the region in which a single event occured
@@ -62,6 +66,7 @@
     -   **Input Feature Fields**
         -   **Region ID** - *GEOID*
 6.  Name your **Output Table** `MI_county_mort_ageGrouped` and note its location; if your output table does not appear in the standalone tables automatically you may have to navigate to its location and add it in manually
+    ![](photos/IDPFilledWAges.png)
 7.  Run the tool
 
 > [!Important]  
@@ -96,6 +101,7 @@
         | 35              | up              |
     These settings will generate crude rates for each age group within the *AgeGroup* field, and age standardized rates for individuals 35 to 64, 65 and up, and 35 and up using the 2010 standard population. Not specifying these fields will generate crude rates for the total population.
 5.  Name your **Output Table** `MI_county_ageStd_RST` and note its location; if your output table does not appear in the standalone tables automatically you may have to navigate to its location and add it in manually
+    ![](photos/RSTFilledWAges.png)
 6.  Run the tool
 
 ## Understanding the output
