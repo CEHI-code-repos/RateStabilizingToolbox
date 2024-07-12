@@ -1,7 +1,5 @@
 <h1 align="center">
-    <a href="https://github.com/CEHI-code-repos/RateStabilizingToolV2">
-        Rate Stabilizing Tool Tutorial
-    </a>
+    Rate Stabilizing Tool Tutorial
 </h1>
 
 #### Files needed for exercise: `RateStabilzingTool2_{versionNumber}.zip` 
