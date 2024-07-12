@@ -1,6 +1,6 @@
 <h1 align="center">
     <a href="https://github.com/CEHI-code-repos/RateStabilizingToolV2">
-        Rate Stabilizing Tool Vignette
+        Rate Stabilizing Tool Tutorial
     </a>
 </h1>
 
