@@ -15,7 +15,7 @@
 -   Interpret and map the output
 
 ## Loading The Toolbox
-1.  Download the latest release  
+1.  Download the [latest release](https://github.com/CEHI-code-repos/RateStabilizingTool2/releases)  
     a.  Save the zipped file to your workspace 
     b.  Extract the zipped file to your workspace
 2.  Create a new ArcGIS Pro Map Project
