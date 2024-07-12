@@ -10,10 +10,10 @@
 
 ## Set up
 
-1.  Click on the Green Code button and Download Zip
+1.  Download the [latest release](https://github.com/CEHI-code-repos/RateStabilizingTool2/releases)'s zip file
 2.  Unzip the zip file
 3.  Open ArcGIS Pro. Create a new Map Project. Within the Catalog Pane,
-    right click on the Toolboxes and Add Toolbox.
+    right click on thse Toolboxes and Add Toolbox.
 4.  Check out the [Tutorial](tutorial/tutorial.md)
 
 ## Tools
