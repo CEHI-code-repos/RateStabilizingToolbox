@@ -16,6 +16,9 @@ def sample_beta(tau2, theta, Z, sig2, num_island_region, isl_reg, num_group, num
     beta_thres = ((1 - A) + np.sqrt((A - 1) ** 2 + 4 * (A - 1 / var_t))) / 2
     beta_thres = np.array([logit(np.maximum(0, beta_thres))] * num_island)
     beta_max = norm.cdf(beta_thres, mean_beta, np.sqrt(var_beta))
+    if (beta_max == 0).any():
+        #print(there is a beta_max = 0") #placeholder in case you want to see where this happens. I only caught two instances
+        return beta
     u = np.random.uniform(0, beta_max)
     beta = norm.ppf(u, mean_beta, np.sqrt(var_beta))
     return beta
