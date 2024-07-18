@@ -54,7 +54,7 @@
         -   **Region ID** - *GEOID*
         -   **Age** - *Age*
 4.  Fill in the **Input Population Data** and **Input Population Data Fields** with their respective values:
-    -   **Input Population Data** - `MI_mort_indiv`
+    -   **Input Population Data** - `MI_pop_grouped`
     -   **Input Population Data Fields**
         -   **Region ID** - *GEOID*
         -   **Population Count** - *PopulationCount*
@@ -87,6 +87,10 @@
     -   **Input Feature** - `MI_county_mort_ageGrouped`
     -   **Input Feature Fields**
         -   **Region ID** - *GEOID*
+3.  Fill in the **Input Feature** and **Input Feature Field** with the respective values:
+	-   **Input Feature** - `MI_carto`
+	-   **Input Feature Field**
+		-   **Region ID** - *GEOID*
 3.  The **Rate** paramter will determine the denominator of rates generated; we wil leave this at per 100,000
 4.  Open the **Age Standardization** drop-down. This menu allows for the optional generation of age standardized rates. Fill the following fields with the following values:
     -   **Age Group Field** - *AgeGroup*
