@@ -168,3 +168,14 @@ def categorize_age(age):
     elif age <= 74: return "65-74"
     elif age <= 84: return "75-84"
     else: return "85up"
+
+def row_string(indexes):
+    index_list = indexes[0:min(4, len(indexes))]
+    output = ", ".join([str(x + 1) for x in index_list])
+    if len(indexes) > 4:
+        output += " and more"
+    if len(indexes) == 1:
+        output = "row " + output
+    else:
+        output = "rows " + output
+    return output
