@@ -23,9 +23,10 @@ def get_islands(adj):
 
 # Create initial values
 def get_inits(Y, n, isl_reg, island_id):
-    beta = np.array([logit(Y[i].sum(0) / n[i].sum(0)) for i in isl_reg])
     with np.errstate(divide = "ignore"):
+        beta = np.array([logit(Y[i].sum(0) / n[i].sum(0)) for i in isl_reg])
         theta = logit(Y / n)
+    beta[~np.isfinite(beta)] = logit(Y.sum() / n.sum())
     theta[~np.isfinite(theta)] = beta[island_id][~np.isfinite(theta)]
     tau2, sig2 = [theta.var(0) * 2] * 2
     Z = theta - beta[island_id]
@@ -60,8 +61,8 @@ def gibbs_rucar(Y, n, adj, std_pop):
     arcpy.SetProgressor("step", "Generating estimates...", 0, 6000, 1)
     for s in range(6000):
         sig2 = sample_sig2(beta, Z, tau2, num_island_region, adj, num_adj, num_region, num_group, num_island, sigma_a, sigma_b, m0, A)
-        tau2 = sample_tau2(theta, beta, Z, sig2, island_id, num_island_region, num_region, num_group, num_island, tau_a, tau_b, A, m0)
-        beta = sample_beta(tau2, theta, Z, sig2, num_island_region, isl_reg, num_group, num_island, A, m0)
+        tau2 = sample_tau2(tau2, theta, beta, Z, sig2, island_id, num_island_region, num_region, num_group, num_island, tau_a, tau_b, A, m0)
+        beta = sample_beta(beta, tau2, theta, Z, sig2, num_island_region, isl_reg, num_group, num_island, A, m0)
         Z = sample_Z(Z, tau2, sig2, theta, beta, num_adj, island_id, adj, num_region)
         theta, theta_acpt = sample_theta(theta, beta, Z, tau2, Y, n, theta_sd, theta_acpt, island_id, num_region, num_group)
         if (s + 1) % 100 == 0:
