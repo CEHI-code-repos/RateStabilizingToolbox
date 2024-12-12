@@ -8,7 +8,7 @@ def logit(x):
 def expit(x):
     return 1 / (1 + np.exp(-x))
 
-def sample_beta(tau2, theta, Z, sig2, num_island_region, isl_reg, num_group, num_island, A, m0):
+def sample_beta(beta, tau2, theta, Z, sig2, num_island_region, isl_reg, num_group, num_island, A, m0):
     var_beta = (np.tile(tau2, num_island) / np.repeat(num_island_region, num_group)).reshape(num_island, num_group)
     tmZ = theta - Z
     mean_beta = [(tmZ[isl_reg[isl]]).mean(0) for isl in range(num_island)]
@@ -41,11 +41,11 @@ def sample_sig2(beta, Z, tau2, num_island_region, adj, num_adj, num_region, num_
     sig_thres = np.maximum(0, sig_thres)
     with np.errstate(divide = "ignore"):
         sig_max = gamma.cdf(1 / sig_thres, a_sig, scale = b_sig)
-    u = np.random.uniform(0, sig_max)
-    sig2 = 1 / gamma.ppf(u, a_sig, scale = b_sig)
+        u = np.random.uniform(0, sig_max)
+        sig2 = 1 / gamma.ppf(u, a_sig, scale = b_sig)
     return sig2
 
-def sample_tau2(theta, beta, Z, sig2, island_id, num_island_region, num_region, num_group, num_island, tau_a, tau_b, A, m0):
+def sample_tau2(tau2, theta, beta, Z, sig2, island_id, num_island_region, num_region, num_group, num_island, tau_a, tau_b, A, m0):
     a_tau = num_region / 2 + tau_a
     b_tau = 1 / (((theta - beta[island_id] - Z) ** 2).sum(0) / 2 + tau_b)
     pi = (beta * np.repeat(num_island_region, num_group).reshape(num_island, num_group) / num_region).sum(0)
@@ -54,6 +54,8 @@ def sample_tau2(theta, beta, Z, sig2, island_id, num_island_region, num_region, 
     tau_thres = np.maximum(0, tau_thres)
     with np.errstate(divide = "ignore"):
         tau_max = gamma.cdf(1 / tau_thres, a_tau, scale = b_tau)
+    if (tau_max == 0).any():
+        return tau2
     u = np.random.uniform(0, tau_max, num_group)
     tau2 = 1 / gamma.ppf(u, a_tau, scale = b_tau)
     return tau2
