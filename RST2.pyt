@@ -635,8 +635,8 @@ class IDP:
         # Check for data types
         if idv_region_info.exists and idv_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
             idv_data_fields.setErrorMessage("Input Individual Data Region ID Field is not an Integer or String")
-        if byAge.value and idv_age_info.exists and idv_age_info.type not in ["SmallInteger", "Integer", "BigInteger"]:
-            idv_data_fields.setErrorMessage("Input Individual Data Age Field is not an Integer")
+        if byAge.value and idv_age_info.exists and idv_age_info.type not in ["SmallInteger", "Integer", "BigInteger", "Double"]:
+            idv_data_fields.setErrorMessage("Input Individual Data Age Field is not an Integer or Double")
         if pop_region_info.exists and pop_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
             pop_data_fields.setErrorMessage("Input Population Data Region ID Field is not an Integer or String")
         if pop_pop_info.exists and pop_pop_info.type not in ["SmallInteger", "Integer", "BigInteger"]:
