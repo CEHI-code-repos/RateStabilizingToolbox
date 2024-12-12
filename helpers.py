@@ -134,11 +134,11 @@ def get_pandas(url, fields):
             return pd.DataFrame(data = arcpy.da.SearchCursor(url, fields), columns = fields)
     return None
 
-def get_valueTableNames(valueTable):
+def get_valueTableValues(valueTable):
     if valueTable.values is not None:
-        return [str(field) for field in valueTable.values[0]]
+        return [[str(value) for value in field] for field in valueTable.values]
     else:
-        return [None for i, col in enumerate(valueTable.columns)]
+        return [[None for i, col in enumerate(valueTable.columns)]]
 
 def get_fieldInfo(url, fieldName):
     fieldType = get_fieldType(url, fieldName)

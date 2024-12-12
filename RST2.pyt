@@ -180,13 +180,14 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
 
-        data_fields_name = helpers.get_valueTableNames(data_fields)
+        data_fields_name = helpers.get_valueTableValues(data_fields)[0]
         data_region_info = helpers.get_fieldInfo(data_url.valueAsText, data_fields_name[0])
         data_event_info = helpers.get_fieldInfo(data_url.valueAsText, data_fields_name[1])
         data_pop_info  = helpers.get_fieldInfo(data_url.valueAsText, data_fields_name[2])
         data_ageGrp_info  = helpers.get_fieldInfo(data_url.valueAsText, data_ageGrp_id.valueAsText)
-        feature_fields_name = helpers.get_valueTableNames(feature_fields)
+        feature_fields_name = helpers.get_valueTableValues(feature_fields)[0]
         feature_region_info = helpers.get_fieldInfo(feature_url.valueAsText, feature_fields_name[0])
+        age_std_groups_vals = helpers.get_valueTableValues(age_std_groups)
 
         # Check if all fields are filled in for age standardization
         if data_ageGrp_info.name is None and (std_pop_yr.valueAsText is not None or age_std_groups.valueAsText is not None):
@@ -280,6 +281,11 @@ class RST:
                 elif len(set(regions_ageGrp_n)) != 1:
                     data_ageGrp_id.setErrorMessage("At least one Region is missing an Age Group")
 
+        # Check for duplicate standardized age groups
+        age_std_groups_vals = [tuple(group) for group in age_std_groups_vals]
+        if len(set(age_std_groups_vals)) != len(age_std_groups_vals):
+            age_std_groups.setErrorMessage("Repeated Standardized Age Groups detected")
+            
         return
 
     def execute(self, parameters, messages):
@@ -296,7 +302,7 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
         
-        data_fields_name = helpers.get_valueTableNames(data_fields)
+        data_fields_name = helpers.get_valueTableValues(data_fields)[0]
         if data_ageGrp_id.valueAsText is not None:
             data_fields_name.append(data_ageGrp_id.valueAsText)
         data_region_name = data_fields_name[0]
@@ -551,10 +557,10 @@ class IDP:
         popWAge_data_fields.enabled = byAge.value
         popWOAge_data_fields.enabled = not byAge.value
 
-        idvWAge_fields_name = helpers.get_valueTableNames(idvWAge_data_fields)
-        idvWOAge_fields_name = helpers.get_valueTableNames(idvWOAge_data_fields)
-        popWAge_fields_name = helpers.get_valueTableNames(popWAge_data_fields)
-        popWOAge_fields_name = helpers.get_valueTableNames(popWOAge_data_fields)
+        idvWAge_fields_name = helpers.get_valueTableValues(idvWAge_data_fields)[0]
+        idvWOAge_fields_name = helpers.get_valueTableValues(idvWOAge_data_fields)[0]
+        popWAge_fields_name = helpers.get_valueTableValues(popWAge_data_fields)[0]
+        popWOAge_fields_name = helpers.get_valueTableValues(popWOAge_data_fields)[0]
 
         if byAge.value:
             idvWOAge_data_fields.values = [[idvWAge_fields_name[0]]]
@@ -588,14 +594,14 @@ class IDP:
             idv_data_fields = idvWOAge_data_fields
             pop_data_fields = popWOAge_data_fields
 
-        idv_fields_name = helpers.get_valueTableNames(idv_data_fields)
+        idv_fields_name = helpers.get_valueTableValues(idv_data_fields)[0]
         idv_region_info = helpers.get_fieldInfo(idv_data_url.valueAsText, idv_fields_name[0])
         idv_age_info = helpers.get_fieldInfo(idv_data_url.valueAsText, idv_fields_name[1] if byAge.value else None)
-        pop_fields_name = helpers.get_valueTableNames(pop_data_fields)
+        pop_fields_name = helpers.get_valueTableValues(pop_data_fields)[0]
         pop_region_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[0])
         pop_pop_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[1])
         pop_ageGrp_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[2] if byAge.value else None)
-        ftr_fields_name = helpers.get_valueTableNames(ftr_fields)
+        ftr_fields_name = helpers.get_valueTableValues(ftr_fields)[0]
         ftr_region_info = helpers.get_fieldInfo(ftr_url.valueAsText, ftr_fields_name[0])
         
         # Make field parameters required based on off byAge
@@ -752,14 +758,14 @@ class IDP:
             idv_data_fields = idvWOAge_data_fields
             pop_data_fields = popWOAge_data_fields
         
-        idv_fields_name = helpers.get_valueTableNames(idv_data_fields)
+        idv_fields_name = helpers.get_valueTableValues(idv_data_fields)[0]
         idv_region_name = idv_fields_name[0]
         idv_age_name = idv_fields_name[1] if byAge.value else None
-        pop_fields_name = helpers.get_valueTableNames(pop_data_fields)
+        pop_fields_name = helpers.get_valueTableValues(pop_data_fields)[0]
         pop_region_name = pop_fields_name[0]
         pop_pop_name = pop_fields_name[1]
         pop_ageGrp_name = pop_fields_name[2] if byAge.value else None
-        ftr_fields_name = helpers.get_valueTableNames(ftr_fields)
+        ftr_fields_name = helpers.get_valueTableValues(ftr_fields)[0]
         ftr_region_name = ftr_fields_name[0]
 
         idv_data = helpers.get_pandas(idv_data_url.valueAsText, idv_fields_name)
