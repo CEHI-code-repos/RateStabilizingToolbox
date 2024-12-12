@@ -1,6 +1,6 @@
 <h1 align="center">
-  <a href="https://github.com/CEHI-code-repos/RateStabilizingToolV2">
-    Rate Stabilizing Tool
+  <a href="https://github.com/CEHI-code-repos/RateStabilizingToolbox">
+    Rate Stabilizing Toolbox
   </a>
 </h1>
 
@@ -10,7 +10,7 @@
 
 ## Set up
 
-1.  Download the [latest release](https://github.com/CEHI-code-repos/RateStabilizingTool2/releases/tag/v0.1.1-beta)'s zip file
+1.  Download the [latest release](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/tag/v0.1.1-beta)'s zip file
 2.  Unzip the zip file
 3.  Open ArcGIS Pro. Create a new Map Project. Within the Catalog Pane,
     right click on thse Toolboxes and Add Toolbox.

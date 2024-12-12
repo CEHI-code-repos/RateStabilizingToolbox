@@ -1,10 +1,10 @@
 <h1 align="center">
-    Rate Stabilizing Tool Tutorial
+    Rate Stabilizing Toolbox Tutorial
 </h1>
 
-#### Files needed for exercise: `RateStabilzingTool2_{versionNumber}.zip` 
+#### Files needed for exercise: `RateStabilzingToolbox_{versionNumber}.zip` 
 
-#### Goal: Use the Rate Stabilizing Tool (RST) to produce easily mapped age-standardize, smoothed county estimates.
+#### Goal: Use the Rate Stabilizing Toolbox (RSToolbox) to produce easily mapped age-standardize, smoothed county estimates.
 
 #### Objectives: 
 
