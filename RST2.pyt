@@ -647,8 +647,8 @@ class IDP:
             pop_data_fields.setErrorMessage("Input Population Data Region ID Field is not an Integer or String")
         if pop_pop_info.exists and pop_pop_info.type not in ["SmallInteger", "Integer", "BigInteger"]:
             pop_data_fields.setErrorMessage("Input Population Data Population Count Field is not an Integer")
-        if byAge.value and pop_ageGrp_info.exists and pop_ageGrp_info.type not in [ "String"]:
-            pop_data_fields.setErrorMessage("Input Population Data ID Field is not an String")
+        if byAge.value and pop_ageGrp_info.exists and pop_ageGrp_info.type not in ["String"]:
+            pop_data_fields.setErrorMessage("Input Population Data Age Group Field is not an String")
         if ftr_region_info.exists and ftr_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
             idv_data_fields.setErrorMessage("Input Feature Region ID Field is not an Integer or String")
         
@@ -662,7 +662,7 @@ class IDP:
         if helpers.exists(out_table.valueAsText):
             out_table.setErrorMessage("Output Table already exists")
 
-        # Check if 
+        # Check if repeated data regions
         if not byAge.value and pop_region_info.exists and len(pop_region_info.list) != len(set(pop_region_info.list)):
             pop_data_fields.setWarningMessage("Repeated Input Population Data Region IDs are detected. Population Counts will be aggregated to totals if no age standardization is applied.")
 
@@ -719,7 +719,7 @@ class IDP:
             if len(ageGrp_invalid) != 0:
                 err = "Age Group Field contains an invalid age group at "
                 err += helpers.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem not in helpers.const_age_grps])
-                pop_ageGrp_info.setErrorMessage(err)
+                pop_data_fields.setErrorMessage(err)
             elif pop_region_info.exists:
                 ageGrp_dict = {}
                 for i, region in enumerate(pop_region_info.list):
