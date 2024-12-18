@@ -2,6 +2,10 @@ import arcpy
 import numpy as np
 import pandas as pd
 from collections import namedtuple
+
+import importlib
+import param_updates
+importlib.reload(param_updates)
 from param_updates import *
 
 ## Model helpers
