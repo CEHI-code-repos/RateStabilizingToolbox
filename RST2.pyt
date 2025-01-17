@@ -384,6 +384,14 @@ class RST:
             adj_dict.setdefault(source, []).append(neighbor)
         adj = list(adj_dict.values())
 
+        # Error if a region has no adjacent regions 
+        no_adjregions = [i for i, adj_regions in enumerate(adj) if len(adj_regions) == 0]
+        if no_adjregions:
+            err = "Each Input Feature Region must have at least one adjacent region. See "
+            err += helpers.row_string(no_adjregions) + ". If using Census geographies, try using TIGER/Line Boundaries."
+            messages.addErrorMessage(err)
+            return
+
         # Generate estimates
         messages.AddMessage("Generating estimates...")
         theta_out = helpers.gibbs_rucar(Y, n, adj, std_pop)
