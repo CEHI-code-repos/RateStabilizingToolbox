@@ -199,37 +199,37 @@ class RST:
 
         # Check for Nulls
         if data_region_info.exists and None in data_region_info.list:
-            err = "Input Table Region ID Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(data_region_info.list) if elem is None])
+            err = "Input Table Region ID Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(data_region_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if data_event_info.exists and None in data_event_info.list:
-            err = "Input Table Event Count Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(data_event_info.list) if elem is None])
+            err = "Input Table Event Count Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(data_event_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if data_pop_info.exists and None in data_pop_info.list:
-            err = "Input Table Population Count Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(data_pop_info.list) if elem is None])
+            err = "Input Table Population Count Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(data_pop_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if data_ageGrp_info.exists and None in data_ageGrp_info.list:
-            err = "Age Group Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem is None])
+            err = "Age Group Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if feature_region_info.exists and None in feature_region_info.list:
-            err = "Input Feature Region ID Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(feature_region_info.list) if elem is None])
+            err = "Input Feature Region ID Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(feature_region_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         
         # Check for data types
         if data_region_info.exists and data_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
-            data_fields.setErrorMessage("Input Table Region ID Field is not an Integer or String")
+            data_fields.setErrorMessage("Input Table Region ID Field must be of type Integer or String.")
         if data_event_info.exists and data_event_info.type not in ["SmallInteger", "Integer", "BigInteger"]:
-            data_fields.setErrorMessage("Input Table Event Count Field is not an Integer")
+            data_fields.setErrorMessage("Input Table Event Count Field must be of type Integer.")
         if data_pop_info.exists and data_pop_info.type not in ["SmallInteger", "Integer", "BigInteger"]:
-            data_fields.setErrorMessage("Input Table Population Count Field is not an Integer")
+            data_fields.setErrorMessage("Input Table Population Count Field must be of type Integer.")
         if data_ageGrp_info.exists and data_ageGrp_info.type not in ["String"]:
-            data_ageGrp_id.setErrorMessage("Age Group Field is not a String")
+            data_ageGrp_id.setErrorMessage("Age Group Field must be of type String.")
         if feature_region_info.exists and feature_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
-            feature_fields.setErrorMessage("Input Feature Region ID Field is not an Integer or String")
+            feature_fields.setErrorMessage("Input Feature Region ID Field must be of type Integer or String.")
 
         # Check if Output Table exists
         if helpers.exists(estimates_out.valueAsText):
@@ -253,19 +253,19 @@ class RST:
             not data_fields.hasError() and not feature_fields.hasError()):
             # Check if Region ID types are the same
             if data_region_info.type != feature_region_info.type:
-                feature_fields.setErrorMessage("Input Feature Region ID Field type does not match Input Table Region ID Field type")
+                feature_fields.setErrorMessage("Input Feature Region ID Field type must match Input Table Region ID Field type.")
             else:
                 # Check if Data contains Region IDs not present in Feature
                 data_only_regions = set(data_region_info.list) - set(feature_region_info.list)
                 if len(data_only_regions) != 0:
-                    err = "Input Table Region ID Field contains a value not present in Input Feature Region ID Field at "
-                    err += helpers.row_string([i for i, elem in enumerate(data_region_info.list) if elem not in feature_region_info.list])
+                    err = "Input Table Region ID Field must only contain values present in Input Feature Region ID Field. See "
+                    err += helpers.row_string([i for i, elem in enumerate(data_region_info.list) if elem not in feature_region_info.list]) + "."
                     data_ageGrp_id.setErrorMessage(err)
                 # Check if Feature contains Region IDs not present in Data
                 feature_only_regions = set(feature_region_info.list) - set(data_region_info.list)
                 if len(feature_only_regions) != 0:
-                    err = "Input Feature Region ID Field contains a value not present in Input Table Region ID Field at "
-                    err += helpers.row_string([i for i, elem in enumerate(feature_region_info.list) if elem not in data_region_info.list])
+                    err = "Input Feature Region ID Field must only contain values present in Input Table Region ID Field. See "
+                    err += helpers.row_string([i for i, elem in enumerate(feature_region_info.list) if elem not in data_region_info.list]) + "."
                     data_ageGrp_id.setErrorMessage(err)
             
         if data_ageGrp_info.exists and not data_ageGrp_id.hasError():
@@ -273,8 +273,8 @@ class RST:
             ageGrp_invalid = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
             # Check if there are any invalid age groups
             if len(ageGrp_invalid) != 0:
-                err = "Age Group Field contains an invalid age group at "
-                err += helpers.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem not in helpers.const_age_grps])
+                err = "Age Group Field must not contain an invalid age group. See "
+                err += helpers.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem not in helpers.const_age_grps]) + "."
                 data_ageGrp_id.setErrorMessage(err)
             elif data_region_info.exists:
                 ageGrp_dict = {}
@@ -284,15 +284,15 @@ class RST:
                 regions_ageGrp_n = [len(ageGrp_dict[region]) for region in ageGrp_dict]
                 # Check if there duplicate age groups
                 if regions_ageGrp_nunique != regions_ageGrp_n:
-                    data_ageGrp_id.setErrorMessage("At least one Age Group is duplicated within a Region")
+                    data_ageGrp_id.setErrorMessage("All Regions must not have any duplicate Age Groups.")
                 # Check if there missing age groups
                 elif len(set(regions_ageGrp_n)) != 1:
-                    data_ageGrp_id.setErrorMessage("At least one Region is missing an Age Group")
+                    data_ageGrp_id.setErrorMessage("All Regions must have the same Age Groups.")
 
         # Check for duplicate standardized age groups
         age_std_groups_vals = [tuple(group) for group in age_std_groups_vals]
         if len(set(age_std_groups_vals)) != len(age_std_groups_vals):
-            age_std_groups.setErrorMessage("Repeated Standardized Age Groups detected")
+            age_std_groups.setErrorMessage("Standardized Age Groups must not be repeated.")
             
         return
 
@@ -638,53 +638,53 @@ class IDP:
 
         # Check for Nulls
         if idv_region_info.exists and None in idv_region_info.list:
-            err = "Input Individual Data Region ID Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(idv_region_info.list) if elem is None])
+            err = "Input Individual Data Region ID Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(idv_region_info.list) if elem is None]) + "."
             idv_data_fields.setErrorMessage(err)
         if byAge.value and idv_age_info.exists and None in idv_age_info.list:
-            err = "Input Individual Data Age Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(idv_age_info.list) if elem is None])
+            err = "Input Individual Data Age Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(idv_age_info.list) if elem is None]) + "."
             idv_data_fields.setErrorMessage(err)
         if pop_region_info.exists and None in pop_region_info.list:
-            err = "Input Population Data Region ID Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(pop_region_info.list) if elem is None])
+            err = "Input Population Data Region ID Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(pop_region_info.list) if elem is None]) + "."
             pop_data_fields.setErrorMessage(err)
         if pop_pop_info.exists and None in pop_pop_info.list:
-            err = "Input Population Data Population Count Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(pop_pop_info.list) if elem is None])
+            err = "Input Population Data Population Count Field must not contain Null values. See  "
+            err += helpers.row_string([i for i, elem in enumerate(pop_pop_info.list) if elem is None]) + "."
             pop_data_fields.setErrorMessage(err)
         if byAge.value and pop_ageGrp_info.exists and None in pop_ageGrp_info.list:
-            err = "Input Population Data Age Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem is None])
+            err = "Input Population Data Age Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem is None]) + "."
             pop_data_fields.setErrorMessage(err)
         if ftr_region_info.exists and None in ftr_region_info.list:
-            err = "Input Feature Region ID Field contains a Null value at "
-            err += helpers.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem is None])
+            err = "Input Feature Region ID Field must not contain Null values. See "
+            err += helpers.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem is None]) + "."
             ftr_fields.setErrorMessage(err)
         
         # Check for data types
         if idv_region_info.exists and idv_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
-            idv_data_fields.setErrorMessage("Input Individual Data Region ID Field is not an Integer or String")
+            idv_data_fields.setErrorMessage("Input Individual Data Region ID Field must be of type Integer or String.")
         if byAge.value and idv_age_info.exists and idv_age_info.type not in ["SmallInteger", "Integer", "BigInteger", "Double"]:
-            idv_data_fields.setErrorMessage("Input Individual Data Age Field is not an Integer or Double")
+            idv_data_fields.setErrorMessage("Input Individual Data Age Field must be of type Integer or Double.")
         if pop_region_info.exists and pop_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
-            pop_data_fields.setErrorMessage("Input Population Data Region ID Field is not an Integer or String")
+            pop_data_fields.setErrorMessage("Input Population Data Region ID Field must be of type Integer or String.")
         if pop_pop_info.exists and pop_pop_info.type not in ["SmallInteger", "Integer", "BigInteger"]:
-            pop_data_fields.setErrorMessage("Input Population Data Population Count Field is not an Integer")
+            pop_data_fields.setErrorMessage("Input Population Data Population Count Field must be of type Integer.")
         if byAge.value and pop_ageGrp_info.exists and pop_ageGrp_info.type not in ["String"]:
-            pop_data_fields.setErrorMessage("Input Population Data Age Group Field is not an String")
+            pop_data_fields.setErrorMessage("Input Population Data Age Group Field must be of type String.")
         if ftr_region_info.exists and ftr_region_info.type not in ["SmallInteger", "Integer", "BigInteger", "String"]:
-            idv_data_fields.setErrorMessage("Input Feature Region ID Field is not an Integer or String")
+            idv_data_fields.setErrorMessage("Input Feature Region ID Field must be of type Integer or String.")
         
         # Check if Individual Age is negative
         if byAge.value and idv_age_info.exists and not idv_data_fields.hasError() and any(age < 0 for age in idv_age_info.list):
             err = "Input Individual Data Age Field contains a negative value at "
-            err += helpers.row_string([i for i, elem in enumerate(idv_age_info.list) if elem < 0])
+            err += helpers.row_string([i for i, elem in enumerate(idv_age_info.list) if elem < 0]) + "."
             pop_data_fields.setErrorMessage(err)
 
         # Check if Output Table exists
         if helpers.exists(out_table.valueAsText):
-            out_table.setErrorMessage("Output Table already exists")
+            out_table.setErrorMessage("Output Table must not already exist.")
 
         # Check if repeated data regions
         if not byAge.value and pop_region_info.exists and len(pop_region_info.list) != len(set(pop_region_info.list)):
@@ -695,13 +695,13 @@ class IDP:
             not idv_data_fields.hasError() and not pop_data_fields.hasError()):
             # Check if Region ID types are the same
             if idv_region_info.type != pop_region_info.type:
-                pop_data_fields.setErrorMessage("Input Population Data Region ID Field type does not match Input Individual Data Region ID Field type")
+                pop_data_fields.setErrorMessage("Input Population Data Region ID Field type must match Input Individual Data Region ID Field type.")
             else:
                 # Check if Individual Data contains Region IDs not present in Population Data
                 idv_only_regions = set(idv_region_info.list) - set(pop_region_info.list)
                 if len(idv_only_regions) != 0:
-                    err = "Input Individual Data Region ID Field contains a value not present in Input Population Data Region ID Field at "
-                    err += helpers.row_string([i for i, elem in enumerate(idv_region_info.list) if elem not in pop_region_info.list])
+                    err = "Input Individual Data Region ID Field must not contain a value not present in Input Population Data Region ID Field. See "
+                    err += helpers.row_string([i for i, elem in enumerate(idv_region_info.list) if elem not in pop_region_info.list]) + "."
                     pop_data_fields.setErrorMessage(err)
 
         # Check Population Data and Feature relationships
@@ -709,20 +709,20 @@ class IDP:
             not pop_data_fields.hasError() and not ftr_fields.hasError()):
             # Check if Region ID types are the same
             if pop_region_info.type != ftr_region_info.type:
-                ftr_fields.setErrorMessage("Input Population Data Region ID Field type does not match Input Feature Region ID Field type")
+                ftr_fields.setErrorMessage("Input Population Data Region ID Field must match Input Feature Region ID Field type.")
             else:
                 # Check if Population Data contains Region IDs not present in Feature
                 pop_only_regions = set(pop_region_info.list) - set(ftr_region_info.list)
                 if len(pop_only_regions) != 0:
-                    err = "Input Population Data Region ID Field contains a value not present in Input Feature Region ID Field at "
-                    err += helpers.row_string([i for i, elem in enumerate(pop_region_info.list) if elem not in ftr_region_info.list])
+                    err = "Input Population Data Region ID Field must only contain values present in Input Feature Region ID Field. See "
+                    err += helpers.row_string([i for i, elem in enumerate(pop_region_info.list) if elem not in ftr_region_info.list]) + "."
                     pop_data_fields.setErrorMessage(err)
                 # Check if Feature contains Region IDs not present in Population Data
                 ftr_only_regions = set(ftr_region_info.list) - set(pop_region_info.list)
                 if len(ftr_only_regions) != 0:
                     err = "Input Feature Region ID Field contains a value not present in Input Population Data Region ID Field at "
-                    err += helpers.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem not in pop_region_info.list])
-                    err += "\n\nPopulation within these regions will be assumed to be 0"
+                    err += helpers.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem not in pop_region_info.list]) + "."
+                    err += "\n\nPopulation within these regions will be assumed to be 0."
                     ftr_fields.setWarningMessage(err)
 
         # Check Individual Data and Feature relationships
@@ -732,8 +732,8 @@ class IDP:
                 # Check if Individual Data contains Region IDs not present in Population Data
                 idv_only_regions = set(idv_region_info.list) - set(ftr_region_info.list)
                 if len(idv_only_regions) != 0:
-                    err = "Input Individual Data Region ID Field contains a value not present in Feature Region ID Field at "
-                    err += helpers.row_string([i for i, elem in enumerate(idv_only_regions.list) if elem not in ftr_region_info.list])
+                    err = "Input Individual Data Region ID Field must only contain values present in Feature Region ID Field. See "
+                    err += helpers.row_string([i for i, elem in enumerate(idv_only_regions.list) if elem not in ftr_region_info.list]) + "."
                     pop_ageGrp_info.setErrorMessage(err)
                     
         if pop_ageGrp_info.exists and not pop_data_fields.hasError():
@@ -741,8 +741,8 @@ class IDP:
             ageGrp_invalid = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
             # Check if there are any invalid age groups
             if len(ageGrp_invalid) != 0:
-                err = "Age Group Field contains an invalid age group at "
-                err += helpers.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem not in helpers.const_age_grps])
+                err = "Age Group Field must only contain valid age groups. See "
+                err += helpers.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem not in helpers.const_age_grps]) + "."
                 pop_data_fields.setErrorMessage(err)
             elif pop_region_info.exists:
                 ageGrp_dict = {}
@@ -752,10 +752,10 @@ class IDP:
                 regions_ageGrp_n = [len(ageGrp_dict[region]) for region in ageGrp_dict]
                 # Check if there duplicate age groups
                 if regions_ageGrp_nunique != regions_ageGrp_n:
-                    pop_data_fields.setErrorMessage("At least one Age Group is duplicated within a Region")
+                    pop_data_fields.setErrorMessage("All Regions must not have any duplicate Age Groups.")
                 # Check if there missing age groups
                 elif len(set(regions_ageGrp_n)) != 1:
-                    pop_data_fields.setErrorMessage("At least one Region is missing an Age Group")
+                    pop_data_fields.setErrorMessage("All Regions must have the same Age Groups.")
 
         return
 
