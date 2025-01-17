@@ -241,6 +241,14 @@ class RST:
             len(data_region_info.list) != len(set(data_region_info.list))):
             data_fields.setWarningMessage("Repeated Input Table Region IDs are detected. Population Counts will be aggregated to totals.")
 
+        # Warn if Event Count >= Population Count
+        if data_pop_info.exists and data_event_info.exists and not data_fields.hasError():
+            above100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if data_pop_info.list[i] <= nevents]
+            if above100_rate_rows:
+                warn = "Input Table Event Count is greater than or equal to Input Table Population Count at "
+                warn += helpers.row_string(above100_rate_rows) + "."
+                data_fields.setWarningMessage(warn)
+
         if (data_region_info.exists and feature_region_info.exists and 
             not data_fields.hasError() and not feature_fields.hasError()):
             # Check if Region ID types are the same
@@ -326,6 +334,14 @@ class RST:
         data = helpers.get_pandas(data_url.valueAsText, data_fields_name)
         age_groups = [""]
         num_group = 1
+
+        # Warn if Event Count >= Population Count
+        above100_rate_rows = np.where(data[data_event_name] >= data[data_pop_name])[0].tolist()
+        if above100_rate_rows:
+            warn = "Input Table Event Count is greater than or equal to Input Table Population Count at "
+            warn += helpers.row_string(above100_rate_rows) + "."
+            messages.addWarningMessage(warn)
+
         data = data.sort_values(by = [data_region_name])
         regions = data[data_region_name].unique().tolist()
         num_region = data[data_region_name].nunique()
@@ -806,9 +822,12 @@ class IDP:
         event_data["EventCount"] = event_data["size"].fillna(value=0).astype(int)
         event_data = event_data[pop_data_groups + ["EventCount", pop_pop_name]]
 
-        # Check if Event Count is always less than Population count
-        if any(event_data["EventCount"] > event_data[pop_pop_name]):
-            messages.addWarningMessage("Event Count is greater than the Population Count for at least one row.")
+        # Warn if Event Count >= Population Count
+        above100_rate_rows = np.where(event_data["EventCount"] >= event_data[pop_pop_name])[0].tolist()
+        if above100_rate_rows:
+            warn = "Event Count is greater than or equal to Population Count at "
+            warn += helpers.row_string(above100_rate_rows) + "."
+            messages.addWarningMessage(warn)
 
         output_np = np.rec.fromrecords(event_data, names = output_cols)
         arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
