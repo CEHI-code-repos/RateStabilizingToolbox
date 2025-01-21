@@ -243,11 +243,16 @@ class RST:
 
         # Warn if Event Count >= Population Count
         if data_pop_info.exists and data_event_info.exists and not data_fields.hasError():
-            above100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if data_pop_info.list[i] <= nevents]
-            if above100_rate_rows:
-                warn = "Input Table Event Count is greater than or equal to Input Table Population Count at "
-                warn += helpers.row_string(above100_rate_rows) + "."
+            equal100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if data_pop_info.list[i] == nevents]
+            if equal100_rate_rows:
+                warn = "Input Table Event Count is equal to Input Table Population Count at "
+                warn += helpers.row_string(equal100_rate_rows) + "."
                 data_fields.setWarningMessage(warn)
+            above100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if data_pop_info.list[i] > nevents]
+            if above100_rate_rows:
+                err = "Input Table Event Count is greater than Input Table Population Count at "
+                err += helpers.row_string(above100_rate_rows) + "."
+                data_fields.setErrorMessage(err)
 
         if (data_region_info.exists and feature_region_info.exists and 
             not data_fields.hasError() and not feature_fields.hasError()):
@@ -335,11 +340,11 @@ class RST:
         age_groups = [""]
         num_group = 1
 
-        # Warn if Event Count >= Population Count
-        above100_rate_rows = np.where(data[data_event_name] >= data[data_pop_name])[0].tolist()
-        if above100_rate_rows:
-            warn = "Input Table Event Count is greater than or equal to Input Table Population Count at "
-            warn += helpers.row_string(above100_rate_rows) + "."
+        # Warn if Event Count == Population Count
+        equal100_rate_rows = np.where(data[data_event_name] == data[data_pop_name])[0].tolist()
+        if equal100_rate_rows:
+            warn = "Input Table Event Count is equal to Input Table Population Count at "
+            warn += helpers.row_string(equal100_rate_rows) + "."
             messages.addWarningMessage(warn)
 
         data = data.sort_values(by = [data_region_name])
@@ -831,10 +836,16 @@ class IDP:
         event_data = event_data[pop_data_groups + ["EventCount", pop_pop_name]]
 
         # Warn if Event Count >= Population Count
-        above100_rate_rows = np.where(event_data["EventCount"] >= event_data[pop_pop_name])[0].tolist()
+        equal100_rate_rows = np.where(event_data["EventCount"] == event_data[pop_pop_name])[0].tolist()
+        if equal100_rate_rows:
+            warn = "Event Count is equal to Population Count at "
+            warn += helpers.row_string(equal100_rate_rows) + "."
+            messages.addWarningMessage(warn)
+        above100_rate_rows = np.where(event_data["EventCount"] > event_data[pop_pop_name])[0].tolist()
         if above100_rate_rows:
-            warn = "Event Count is greater than or equal to Population Count at "
+            warn = "Event Count is greater than to Population Count at "
             warn += helpers.row_string(above100_rate_rows) + "."
+            warn += "\n\nThe Rate Stabilizing Tool cannot produce reliable rates where the Event Count exceeds the Population Count."
             messages.addWarningMessage(warn)
 
         output_np = np.rec.fromrecords(event_data, names = output_cols)
