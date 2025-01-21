@@ -67,7 +67,7 @@ def gibbs_rucar(Y, n, adj, std_pop):
         sig2 = sample_sig2(beta, Z, tau2, num_island_region, adj, num_adj, num_region, num_group, num_island, sigma_a, sigma_b, m0, A)
         tau2 = sample_tau2(tau2, theta, beta, Z, sig2, island_id, num_island_region, num_region, num_group, num_island, tau_a, tau_b, A, m0)
         beta = sample_beta(beta, tau2, theta, Z, sig2, num_island_region, isl_reg, num_group, num_island, A, m0)
-        Z = sample_Z(Z, tau2, sig2, theta, beta, num_adj, island_id, adj, num_region)
+        Z = sample_Z(Z, tau2, sig2, theta, beta, num_adj, island_id, isl_reg, adj, num_region, num_island)
         theta, theta_acpt = sample_theta(theta, beta, Z, tau2, Y, n, theta_sd, theta_acpt, island_id, num_region, num_group)
         if (s + 1) % 100 == 0:
             theta_acpt = np.clip(theta_acpt, 0.20, 0.75)

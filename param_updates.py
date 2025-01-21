@@ -22,13 +22,15 @@ def sample_beta(beta, tau2, theta, Z, sig2, num_island_region, isl_reg, num_grou
     beta = norm.ppf(u, mean_beta, np.sqrt(var_beta))
     return beta
 
-def sample_Z(Z, tau2, sig2, theta, beta, num_adj, island_id, adj, num_region):
+def sample_Z(Z, tau2, sig2, theta, beta, num_adj, island_id, isl_reg, adj, num_region, num_island):
     tmb = theta - beta[island_id]
     var_Z = [1 / (1 / tau2 + i / sig2) for i in range(max(num_adj) + 1)]
     for i in range(num_region):
         mean_Z = var_Z[num_adj[i]] * (tmb[i] / tau2 + Z[adj[i]].sum(0) / sig2)
         Z[i] = np.random.normal(mean_Z, np.sqrt(var_Z[num_adj[i]]))
-    Z -= Z.mean(0)
+    for i in range(num_island):
+        Z[isl_reg[i]] -= Z[isl_reg[i]].mean(0)
+    #Z -= Z.mean(0)
     return Z
 
 def sample_sig2(beta, Z, tau2, num_island_region, adj, num_adj, num_region, num_group, num_island, sigma_a, sigma_b, m0, A):
