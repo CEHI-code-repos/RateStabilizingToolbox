@@ -243,12 +243,12 @@ class RST:
 
         # Warn if Event Count >= Population Count
         if data_pop_info.exists and data_event_info.exists and not data_fields.hasError():
-            equal100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if data_pop_info.list[i] == nevents]
+            equal100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if nevents == data_pop_info.list[i]]
             if equal100_rate_rows:
                 warn = "Input Table Event Count is equal to Input Table Population Count at "
                 warn += helpers.row_string(equal100_rate_rows) + "."
                 data_fields.setWarningMessage(warn)
-            above100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if data_pop_info.list[i] > nevents]
+            above100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if nevents > data_pop_info.list[i]]
             if above100_rate_rows:
                 err = "Input Table Event Count is greater than Input Table Population Count at "
                 err += helpers.row_string(above100_rate_rows) + "."
