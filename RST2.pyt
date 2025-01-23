@@ -2,6 +2,7 @@
 import arcpy
 import pandas as pd
 import numpy as np
+import requests
 import helpers
 
 import importlib
@@ -15,7 +16,7 @@ class Toolbox:
         self.alias = "RST"
 
         # List of tool classes associated with this toolbox
-        self.tools = [RST, IDP]
+        self.tools = [RST, IDP, CPR]
 
 
 class RST:
@@ -448,7 +449,7 @@ class IDP:
         """Define the tool parameters."""
 
         param_byAge = arcpy.Parameter(
-            displayName="By Age",
+            displayName="Age Stratified",
             name="ByAge",
             datatype="GPBoolean",
             parameterType="Required",
@@ -857,4 +858,153 @@ class IDP:
         """This method takes place after outputs are processed and
         added to the display."""
 
+        return
+    
+class CPR:
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "Census Population Requester"
+        self.description = ""
+
+    def getParameterInfo(self):
+        """Define the tool parameters."""
+
+        param_byAge = arcpy.Parameter(
+            displayName="Age Stratified",
+            name="ByAge",
+            datatype="GPBoolean",
+            parameterType="Required",
+            direction="Input"
+        )
+        param_byAge.value = True
+
+        param_data_fields = arcpy.Parameter(
+            displayName = "Request Parameters",
+            name = "InputTableFields",
+            datatype = "GPValueTable",
+            parameterType = "Required",
+            direction = "Input"
+        )
+        param_data_fields.columns = [['String', 'Survey'], ['String', 'Year'], ['String', 'Geography'], ['String', 'State']]
+        param_data_fields.filters[0].type = "ValueList"
+        param_data_fields.filters[0].list = ["5-year ACS", "Decennial"]
+        param_data_fields.filters[1].type = "ValueList"
+        param_data_fields.filters[1].list = helpers.acs_years
+        param_data_fields.filters[2].type = "ValueList"
+        param_data_fields.filters[2].list = ["County", "Tract"]
+        param_data_fields.filters[3].type = "ValueList"
+        param_data_fields.filters[3].list = list(helpers.state_to_fips.keys())
+        param_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
+
+        param_out_table = arcpy.Parameter(
+            displayName="Output Table",
+            name="OutputTable",
+            datatype="GPTableView",
+            parameterType="Required",
+            direction="Output"
+        )
+
+        params = [
+            param_byAge,
+            param_data_fields,
+            param_out_table
+        ]
+        return params
+
+    def isLicensed(self):
+        """Set whether the tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        byAge = parameters[0]
+        req_param = parameters[1]
+        out_table = parameters[2]
+
+        req_survey = helpers.get_valueTableValues(req_param)[0][0]
+
+        if not req_survey:
+            pass
+        elif req_survey == "5-year ACS":
+            req_param.filters[1].list = helpers.acs_years
+        elif req_survey == "Decennial":
+            req_param.filters[1].list = helpers.dec_years
+
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter. This method is called after internal validation."""
+
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        byAge = parameters[0]
+        req_param = parameters[1]
+        out_table = parameters[2]
+
+        req_param_val = helpers.get_valueTableValues(req_param)[0]
+        req_survey = req_param_val[0]
+        req_year = req_param_val[1]
+        req_geography = req_param_val[2]
+        req_state = req_param_val[3]
+        
+        req_geography = req_geography.lower()
+        req_state = helpers.state_to_fips[req_state]
+        if req_survey == "5-year ACS":
+            req_year = req_year.split("-")[1]
+            total_pop_var = helpers.acs_tot_var
+            age_vars_dict = helpers.acs_age_vars
+            req_url = "https://api.census.gov/data/{}/acs/acs5?get={},GEO_ID,NAME&for={}:*&in=state:{}"
+        elif req_survey == "Decennial" and int(req_year) == 2020:
+            total_pop_var = helpers.dc_tot_var
+            age_vars_dict = helpers.dc_age_vars
+            req_url = "https://api.census.gov/data/{}/dec/dp?get={},GEO_ID,NAME&for={}:*&in=state:{}"
+        elif req_survey == "Decennial" and int(req_year) != 2020:
+            total_pop_var = helpers.sf1_tot_var
+            age_vars_dict = helpers.sf1_age_vars
+            req_url = "https://api.census.gov/data/{}/dec/sf1?get={},GEO_ID,NAME&for={}:*&in=state:{}"
+        if byAge.value:
+            var_cols = [var for var_list in age_vars_dict.values() for var in var_list]
+            req_vars = ",".join(var_cols)
+        else:
+            var_cols = [total_pop_var]
+            req_vars = total_pop_var
+        req_url = req_url.format(req_year, req_vars, req_geography, req_state)
+
+        resp = requests.get(req_url)
+        resp_df = pd.DataFrame.from_dict(resp.json())
+        resp_df.columns = resp_df.iloc[0].to_list()
+        resp_df = resp_df.drop(0)
+
+        geo_cols = [col for col in resp_df.columns if col not in var_cols]
+        resp_df = resp_df[geo_cols + var_cols]
+        resp_df["GEO_ID"] = resp_df["GEO_ID"].map(lambda geoid: geoid.split("US")[1])
+        resp_df[var_cols] = resp_df[var_cols].apply(pd.to_numeric)
+        if byAge.value:
+            output_vars = age_vars_dict.keys()
+            for age_grp in age_vars_dict:
+                resp_df[age_grp] = resp_df[age_vars_dict[age_grp]].sum(axis=1)
+            resp_df = resp_df.drop(var_cols, axis = 1)
+            resp_df = resp_df.melt(
+                id_vars = geo_cols, 
+                value_vars = output_vars,
+                var_name = 'age_group', 
+                value_name = 'pop_count')
+        else:
+            resp_df = resp_df.rename(columns = {total_pop_var: "pop_count"})
+
+        resp_df = resp_df.rename(columns = {"GEO_ID": "geoid", "NAME": "name"})
+
+        output_np = np.rec.fromrecords(resp_df, names = list(resp_df.columns))
+        arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
+
+        return
+
+    def postExecute(self, parameters):
+        """This method takes place after outputs are processed and
+        added to the display."""
         return
