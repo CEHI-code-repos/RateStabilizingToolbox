@@ -960,8 +960,8 @@ class CPR:
             age_vars_dict = helpers.acs_age_vars
             req_url = "https://api.census.gov/data/{}/acs/acs5?get={},GEO_ID,NAME&for={}:*&in=state:{}"
         elif req_survey == "Decennial" and int(req_year) == 2020:
-            total_pop_var = helpers.dc_tot_var
-            age_vars_dict = helpers.dc_age_vars
+            total_pop_var = helpers.dhc_tot_var
+            age_vars_dict = helpers.dhc_age_vars
             req_url = "https://api.census.gov/data/{}/dec/dp?get={},GEO_ID,NAME&for={}:*&in=state:{}"
         elif req_survey == "Decennial" and int(req_year) != 2020:
             total_pop_var = helpers.sf1_tot_var
@@ -985,13 +985,12 @@ class CPR:
         resp_df["GEO_ID"] = resp_df["GEO_ID"].map(lambda geoid: geoid.split("US")[1])
         resp_df[var_cols] = resp_df[var_cols].apply(pd.to_numeric)
         if byAge.value:
-            output_vars = age_vars_dict.keys()
             for age_grp in age_vars_dict:
                 resp_df[age_grp] = resp_df[age_vars_dict[age_grp]].sum(axis=1)
             resp_df = resp_df.drop(var_cols, axis = 1)
             resp_df = resp_df.melt(
                 id_vars = geo_cols, 
-                value_vars = output_vars,
+                value_vars = age_vars_dict.keys(),
                 var_name = 'age_group', 
                 value_name = 'pop_count')
         else:
