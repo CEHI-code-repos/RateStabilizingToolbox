@@ -958,7 +958,13 @@ class CDR:
         geom_type = parameters[3]
         out_feature = parameters[4]
 
-        req_survey = arcpy_extras.get_valueTableValues(req_param)[0][0]
+        req_param_val = arcpy_extras.get_valueTableValues(req_param)[0]
+        req_survey = req_param_val[0]
+        req_year = req_param_val[1]
+        req_geography = req_param_val[2]
+        req_state = req_param_val[3]
+        req_geom_type = geom_type.valueAsText
+        req_out_feature = out_feature.valueAsText
 
         if not req_survey:
             pass
@@ -967,11 +973,44 @@ class CDR:
         elif req_survey == "Decennial":
             req_param.filters[1].list = census.constants.dec_years
 
+        # No geometry for 2009
+        if req_year == "2005-2009":
+            geom_type.enabled = False
+            geom_type.value = None
+            out_feature.enabled = False
+            out_feature.value = None
+        else:
+            geom_type.enabled = True
+            out_feature.enabled = True
+
+        if req_year in census.constants.acs_years and req_year in ["2007-2011", "2008-2012"]:
+            geom_type.filter.list = ["TIGER"]
+        else:
+            geom_type.filter.list = ["TIGER", "Cartographic"]
+        
         return
 
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool
         parameter. This method is called after internal validation."""
+        byAge = parameters[0]
+        req_param = parameters[1]
+        out_table = parameters[2]
+        geom_type = parameters[3]
+        out_feature = parameters[4]
+
+        req_param_val = arcpy_extras.get_valueTableValues(req_param)[0]
+        req_survey = req_param_val[0]
+        req_year = req_param_val[1]
+        req_geography = req_param_val[2]
+        req_state = req_param_val[3]
+        req_geom_type = geom_type.valueAsText
+        req_out_feature = out_feature.valueAsText
+
+        if req_geom_type:
+            arcpy_extras.set_parameterRequired(out_feature)
+        if req_out_feature:
+            arcpy_extras.set_parameterRequired(geom_type)
 
         return
 
@@ -1001,6 +1040,14 @@ class CDR:
 
         output_np = np.rec.fromrecords(resp_df, names = list(resp_df.columns))
         arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
+        
+        census.geometry.get_geometry(
+            req_geography,
+            req_geom_type, 
+            req_year, 
+            req_state, 
+            req_out_feature
+        )
 
         return
 
