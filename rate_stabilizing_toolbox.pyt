@@ -2,11 +2,10 @@
 import arcpy
 import pandas as pd
 import numpy as np
-import requests
-import helpers
 
-import importlib
-importlib.reload(helpers)
+import model
+import census
+import arcpy_extras
 
 class Toolbox:
     def __init__(self):
@@ -16,7 +15,7 @@ class Toolbox:
         self.alias = "RST"
 
         # List of tool classes associated with this toolbox
-        self.tools = [RST, IDP, CPR]
+        self.tools = [RST, IDP, CDR]
 
 
 class RST:
@@ -153,11 +152,11 @@ class RST:
         age_std_groups = parameters[8]
 
         # Restrict age groups to only those present within data
-        data_ageGrp_info  = helpers.get_fieldInfo(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        data_ageGrp_info  = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_ageGrp_id.valueAsText)
         if data_ageGrp_info.exists:
             ageGrp_unique = list(set(data_ageGrp_info.list))
 
-            grp_notValid = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
+            grp_notValid = [group for group in ageGrp_unique if group not in census.constants.age_grps]
 
             if len(grp_notValid) == 0:
                 lvs = sorted([int(group.split("-")[0]) for group in ageGrp_unique if group != "85up"])
@@ -181,43 +180,43 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
 
-        data_fields_name = helpers.get_valueTableValues(data_fields)[0]
-        data_region_info = helpers.get_fieldInfo(data_url.valueAsText, data_fields_name[0])
-        data_event_info = helpers.get_fieldInfo(data_url.valueAsText, data_fields_name[1])
-        data_pop_info  = helpers.get_fieldInfo(data_url.valueAsText, data_fields_name[2])
-        data_ageGrp_info  = helpers.get_fieldInfo(data_url.valueAsText, data_ageGrp_id.valueAsText)
-        feature_fields_name = helpers.get_valueTableValues(feature_fields)[0]
-        feature_region_info = helpers.get_fieldInfo(feature_url.valueAsText, feature_fields_name[0])
-        age_std_groups_vals = helpers.get_valueTableValues(age_std_groups)
+        data_fields_name = arcpy_extras.get_valueTableValues(data_fields)[0]
+        data_region_info = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_fields_name[0])
+        data_event_info = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_fields_name[1])
+        data_pop_info  = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_fields_name[2])
+        data_ageGrp_info  = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_ageGrp_id.valueAsText)
+        feature_fields_name = arcpy_extras.get_valueTableValues(feature_fields)[0]
+        feature_region_info = arcpy_extras.get_fieldInfo(feature_url.valueAsText, feature_fields_name[0])
+        age_std_groups_vals = arcpy_extras.get_valueTableValues(age_std_groups)
 
         # Check if all fields are filled in for age standardization
         if data_ageGrp_info.name is None and (std_pop_yr.valueAsText is not None or age_std_groups.valueAsText is not None):
-            helpers.set_parameterRequired(data_ageGrp_id)
+            arcpy_extras.set_parameterRequired(data_ageGrp_id)
         if std_pop_yr.valueAsText is None and (data_ageGrp_info.name is not None or age_std_groups.valueAsText is not None):
-            helpers.set_parameterRequired(std_pop_yr)
+            arcpy_extras.set_parameterRequired(std_pop_yr)
         if age_std_groups.valueAsText is None and (data_ageGrp_info.name is not None or std_pop_yr.valueAsText is not None):
-            helpers.set_valueTableRequired(age_std_groups)
+            arcpy_extras.set_valueTableRequired(age_std_groups)
 
         # Check for Nulls
         if data_region_info.exists and None in data_region_info.list:
             err = "Input Table Region ID Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(data_region_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(data_region_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if data_event_info.exists and None in data_event_info.list:
             err = "Input Table Event Count Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(data_event_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(data_event_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if data_pop_info.exists and None in data_pop_info.list:
             err = "Input Table Population Count Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(data_pop_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(data_pop_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if data_ageGrp_info.exists and None in data_ageGrp_info.list:
             err = "Age Group Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         if feature_region_info.exists and None in feature_region_info.list:
             err = "Input Feature Region ID Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(feature_region_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(feature_region_info.list) if elem is None]) + "."
             data_fields.setErrorMessage(err)
         
         # Check for data types
@@ -233,7 +232,7 @@ class RST:
             feature_fields.setErrorMessage("Input Feature Region ID Field must be of type Integer or String.")
 
         # Check if Output Table exists
-        if helpers.exists(estimates_out.valueAsText):
+        if arcpy_extras.exists(estimates_out.valueAsText):
             estimates_out.setErrorMessage("Output Table already exists")
 
         # Check if Region IDs are repeated when age is adjusted for
@@ -247,12 +246,12 @@ class RST:
             equal100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if nevents == data_pop_info.list[i]]
             if equal100_rate_rows:
                 warn = "Input Table Event Count is equal to Input Table Population Count at "
-                warn += helpers.row_string(equal100_rate_rows) + "."
+                warn += arcpy_extras.row_string(equal100_rate_rows) + "."
                 data_fields.setWarningMessage(warn)
             above100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if nevents > data_pop_info.list[i]]
             if above100_rate_rows:
                 err = "Input Table Event Count is greater than Input Table Population Count at "
-                err += helpers.row_string(above100_rate_rows) + "."
+                err += arcpy_extras.row_string(above100_rate_rows) + "."
                 data_fields.setErrorMessage(err)
 
         if (data_region_info.exists and feature_region_info.exists and 
@@ -265,22 +264,22 @@ class RST:
                 data_only_regions = set(data_region_info.list) - set(feature_region_info.list)
                 if len(data_only_regions) != 0:
                     err = "Input Table Region ID Field must only contain values present in Input Feature Region ID Field. See "
-                    err += helpers.row_string([i for i, elem in enumerate(data_region_info.list) if elem not in feature_region_info.list]) + "."
+                    err += arcpy_extras.row_string([i for i, elem in enumerate(data_region_info.list) if elem not in feature_region_info.list]) + "."
                     data_ageGrp_id.setErrorMessage(err)
                 # Check if Feature contains Region IDs not present in Data
                 feature_only_regions = set(feature_region_info.list) - set(data_region_info.list)
                 if len(feature_only_regions) != 0:
                     err = "Input Feature Region ID Field must only contain values present in Input Table Region ID Field. See "
-                    err += helpers.row_string([i for i, elem in enumerate(feature_region_info.list) if elem not in data_region_info.list]) + "."
+                    err += arcpy_extras.row_string([i for i, elem in enumerate(feature_region_info.list) if elem not in data_region_info.list]) + "."
                     data_ageGrp_id.setErrorMessage(err)
             
         if data_ageGrp_info.exists and not data_ageGrp_id.hasError():
             ageGrp_unique = list(set(data_ageGrp_info.list))
-            ageGrp_invalid = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
+            ageGrp_invalid = [group for group in ageGrp_unique if group not in census.constants.age_grps]
             # Check if there are any invalid age groups
             if len(ageGrp_invalid) != 0:
                 err = "Age Group Field must not contain an invalid age group. See "
-                err += helpers.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem not in helpers.const_age_grps]) + "."
+                err += arcpy_extras.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem not in census.constants.age_grps]) + "."
                 data_ageGrp_id.setErrorMessage(err)
             elif data_region_info.exists:
                 ageGrp_dict = {}
@@ -316,7 +315,7 @@ class RST:
         std_pop_yr = parameters[7]
         age_std_groups = parameters[8]
         
-        data_fields_name = helpers.get_valueTableValues(data_fields)[0]
+        data_fields_name = arcpy_extras.get_valueTableValues(data_fields)[0]
         if data_ageGrp_id.valueAsText is not None:
             data_fields_name.append(data_ageGrp_id.valueAsText)
         data_region_name = data_fields_name[0]
@@ -331,13 +330,13 @@ class RST:
         age_std_groups_names = []
         if age_std_groups.values is not None:
             for lv, uv, in age_std_groups.values:
-                lv_index = [i for i, grp in enumerate(helpers.const_age_grps) if grp.startswith(lv)][0]
-                uv_index = [i for i, grp in enumerate(helpers.const_age_grps) if grp.endswith(uv)][0]
-                age_std_groups_arr.append(helpers.const_age_grps[lv_index:(uv_index + 1)])
+                lv_index = [i for i, grp in enumerate(census.constants.age_grps) if grp.startswith(lv)][0]
+                uv_index = [i for i, grp in enumerate(census.constants.age_grps) if grp.endswith(uv)][0]
+                age_std_groups_arr.append(census.constants.age_grps[lv_index:(uv_index + 1)])
                 age_std_groups_names.append( lv + ("to" + uv if uv != "85up" else "up") )
 
         # Read in data
-        data = helpers.get_pandas(data_url.valueAsText, data_fields_name)
+        data = arcpy_extras.get_pandas(data_url.valueAsText, data_fields_name)
         age_groups = [""]
         num_group = 1
 
@@ -345,7 +344,7 @@ class RST:
         equal100_rate_rows = np.where(data[data_event_name] == data[data_pop_name])[0].tolist()
         if equal100_rate_rows:
             warn = "Input Table Event Count is equal to Input Table Population Count at "
-            warn += helpers.row_string(equal100_rate_rows) + "."
+            warn += arcpy_extras.row_string(equal100_rate_rows) + "."
             messages.addWarningMessage(warn)
 
         data = data.sort_values(by = [data_region_name])
@@ -370,7 +369,7 @@ class RST:
         if (std_pop_yr.valueAsText == "2010"):
             std_pop = np.array([20203362, 41025851, 43626342, 41063948, 41070606, 45006716, 36482729, 21713429, 13061122, 5493433])
         if std_pop_yr.valueAsText is not None:
-            std_pop = std_pop[np.isin(helpers.const_age_grps, age_groups)]
+            std_pop = std_pop[np.isin(census.constants.age_grps, age_groups)]
 
         # Create adjacency matrix
         arcpy.AddMessage("Creating adjacency matrix ...")
@@ -394,22 +393,22 @@ class RST:
         no_adjregions = [i for i, adj_regions in enumerate(adj) if len(adj_regions) == 0]
         if no_adjregions:
             err = "Each Input Feature Region must have at least one adjacent region. See "
-            err += helpers.row_string(no_adjregions) + ". If using Census geographies, try using TIGER/Line Boundaries."
+            err += arcpy_extras.row_string(no_adjregions) + ". If using Census geographies, try using TIGER/Line Boundaries."
             messages.addErrorMessage(err)
             return
 
         # Generate estimates
         messages.AddMessage("Generating estimates...")
-        theta_out = helpers.gibbs_rucar(Y, n, adj, std_pop)
-        output = helpers.expit(theta_out) * rates_per
+        theta_out = model.runner.gibbs_rucar(Y, n, adj, std_pop)
+        output = model.param_updates.expit(theta_out) * rates_per
 
         # If age standardized, generate age_groups
         if age_std_groups.values is not None:
             for ages in age_std_groups_arr:
-                output = helpers.age_std(output, age_groups, std_pop, ages)
+                output = model.runner.age_std(output, age_groups, std_pop, ages)
             age_groups.extend(age_std_groups_names)
         
-        medians, ci_chart, reliable = helpers.get_medians(output, regions, age_groups)
+        medians, ci_chart, reliable = model.runner.get_medians(output, regions, age_groups)
 
         # If age standardized, combine output with prefixes, else just rename the output cols
         output = output_cols = []
@@ -442,7 +441,7 @@ class RST:
 class IDP:
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = "Individual Data Processing"
+        self.label = "Individual Data Processor"
         self.description = ""
 
     def getParameterInfo(self):
@@ -587,10 +586,10 @@ class IDP:
         popWAge_data_fields.enabled = byAge.value
         popWOAge_data_fields.enabled = not byAge.value
 
-        idvWAge_fields_name = helpers.get_valueTableValues(idvWAge_data_fields)[0]
-        idvWOAge_fields_name = helpers.get_valueTableValues(idvWOAge_data_fields)[0]
-        popWAge_fields_name = helpers.get_valueTableValues(popWAge_data_fields)[0]
-        popWOAge_fields_name = helpers.get_valueTableValues(popWOAge_data_fields)[0]
+        idvWAge_fields_name = arcpy_extras.get_valueTableValues(idvWAge_data_fields)[0]
+        idvWOAge_fields_name = arcpy_extras.get_valueTableValues(idvWOAge_data_fields)[0]
+        popWAge_fields_name = arcpy_extras.get_valueTableValues(popWAge_data_fields)[0]
+        popWOAge_fields_name = arcpy_extras.get_valueTableValues(popWOAge_data_fields)[0]
 
         if byAge.value:
             idvWOAge_data_fields.values = [[idvWAge_fields_name[0]]]
@@ -624,48 +623,48 @@ class IDP:
             idv_data_fields = idvWOAge_data_fields
             pop_data_fields = popWOAge_data_fields
 
-        idv_fields_name = helpers.get_valueTableValues(idv_data_fields)[0]
-        idv_region_info = helpers.get_fieldInfo(idv_data_url.valueAsText, idv_fields_name[0])
-        idv_age_info = helpers.get_fieldInfo(idv_data_url.valueAsText, idv_fields_name[1] if byAge.value else None)
-        pop_fields_name = helpers.get_valueTableValues(pop_data_fields)[0]
-        pop_region_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[0])
-        pop_pop_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[1])
-        pop_ageGrp_info = helpers.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[2] if byAge.value else None)
-        ftr_fields_name = helpers.get_valueTableValues(ftr_fields)[0]
-        ftr_region_info = helpers.get_fieldInfo(ftr_url.valueAsText, ftr_fields_name[0])
+        idv_fields_name = arcpy_extras.get_valueTableValues(idv_data_fields)[0]
+        idv_region_info = arcpy_extras.get_fieldInfo(idv_data_url.valueAsText, idv_fields_name[0])
+        idv_age_info = arcpy_extras.get_fieldInfo(idv_data_url.valueAsText, idv_fields_name[1] if byAge.value else None)
+        pop_fields_name = arcpy_extras.get_valueTableValues(pop_data_fields)[0]
+        pop_region_info = arcpy_extras.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[0])
+        pop_pop_info = arcpy_extras.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[1])
+        pop_ageGrp_info = arcpy_extras.get_fieldInfo(pop_data_url.valueAsText, pop_fields_name[2] if byAge.value else None)
+        ftr_fields_name = arcpy_extras.get_valueTableValues(ftr_fields)[0]
+        ftr_region_info = arcpy_extras.get_fieldInfo(ftr_url.valueAsText, ftr_fields_name[0])
         
         # Make field parameters required based on off byAge
         if byAge.value:
-            helpers.set_valueTableRequired(idvWAge_data_fields)
-            helpers.set_valueTableRequired(popWAge_data_fields)
+            arcpy_extras.set_valueTableRequired(idvWAge_data_fields)
+            arcpy_extras.set_valueTableRequired(popWAge_data_fields)
         else:
-            helpers.set_valueTableRequired(idvWOAge_data_fields)
-            helpers.set_valueTableRequired(popWOAge_data_fields)
+            arcpy_extras.set_valueTableRequired(idvWOAge_data_fields)
+            arcpy_extras.set_valueTableRequired(popWOAge_data_fields)
 
         # Check for Nulls
         if idv_region_info.exists and None in idv_region_info.list:
             err = "Input Individual Data Region ID Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(idv_region_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(idv_region_info.list) if elem is None]) + "."
             idv_data_fields.setErrorMessage(err)
         if byAge.value and idv_age_info.exists and None in idv_age_info.list:
             err = "Input Individual Data Age Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(idv_age_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(idv_age_info.list) if elem is None]) + "."
             idv_data_fields.setErrorMessage(err)
         if pop_region_info.exists and None in pop_region_info.list:
             err = "Input Population Data Region ID Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(pop_region_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(pop_region_info.list) if elem is None]) + "."
             pop_data_fields.setErrorMessage(err)
         if pop_pop_info.exists and None in pop_pop_info.list:
             err = "Input Population Data Population Count Field must not contain Null values. See  "
-            err += helpers.row_string([i for i, elem in enumerate(pop_pop_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(pop_pop_info.list) if elem is None]) + "."
             pop_data_fields.setErrorMessage(err)
         if byAge.value and pop_ageGrp_info.exists and None in pop_ageGrp_info.list:
             err = "Input Population Data Age Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem is None]) + "."
             pop_data_fields.setErrorMessage(err)
         if ftr_region_info.exists and None in ftr_region_info.list:
             err = "Input Feature Region ID Field must not contain Null values. See "
-            err += helpers.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem is None]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem is None]) + "."
             ftr_fields.setErrorMessage(err)
         
         # Check for data types
@@ -685,11 +684,11 @@ class IDP:
         # Check if Individual Age is negative
         if byAge.value and idv_age_info.exists and not idv_data_fields.hasError() and any(age < 0 for age in idv_age_info.list):
             err = "Input Individual Data Age Field contains a negative value at "
-            err += helpers.row_string([i for i, elem in enumerate(idv_age_info.list) if elem < 0]) + "."
+            err += arcpy_extras.row_string([i for i, elem in enumerate(idv_age_info.list) if elem < 0]) + "."
             pop_data_fields.setErrorMessage(err)
 
         # Check if Output Table exists
-        if helpers.exists(out_table.valueAsText):
+        if arcpy_extras.exists(out_table.valueAsText):
             out_table.setErrorMessage("Output Table must not already exist.")
 
         # Check if repeated data regions
@@ -707,7 +706,7 @@ class IDP:
                 idv_only_regions = set(idv_region_info.list) - set(pop_region_info.list)
                 if len(idv_only_regions) != 0:
                     err = "Input Individual Data Region ID Field must not contain a value not present in Input Population Data Region ID Field. See "
-                    err += helpers.row_string([i for i, elem in enumerate(idv_region_info.list) if elem not in pop_region_info.list]) + "."
+                    err += arcpy_extras.row_string([i for i, elem in enumerate(idv_region_info.list) if elem not in pop_region_info.list]) + "."
                     pop_data_fields.setErrorMessage(err)
 
         # Check Population Data and Feature relationships
@@ -721,13 +720,13 @@ class IDP:
                 pop_only_regions = set(pop_region_info.list) - set(ftr_region_info.list)
                 if len(pop_only_regions) != 0:
                     err = "Input Population Data Region ID Field must only contain values present in Input Feature Region ID Field. See "
-                    err += helpers.row_string([i for i, elem in enumerate(pop_region_info.list) if elem not in ftr_region_info.list]) + "."
+                    err += arcpy_extras.row_string([i for i, elem in enumerate(pop_region_info.list) if elem not in ftr_region_info.list]) + "."
                     pop_data_fields.setErrorMessage(err)
                 # Check if Feature contains Region IDs not present in Population Data
                 ftr_only_regions = set(ftr_region_info.list) - set(pop_region_info.list)
                 if len(ftr_only_regions) != 0:
                     err = "Input Feature Region ID Field contains a value not present in Input Population Data Region ID Field at "
-                    err += helpers.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem not in pop_region_info.list]) + "."
+                    err += arcpy_extras.row_string([i for i, elem in enumerate(ftr_region_info.list) if elem not in pop_region_info.list]) + "."
                     err += "\n\nPopulation within these regions will be assumed to be 0."
                     ftr_fields.setWarningMessage(err)
 
@@ -739,16 +738,16 @@ class IDP:
                 idv_only_regions = set(idv_region_info.list) - set(ftr_region_info.list)
                 if len(idv_only_regions) != 0:
                     err = "Input Individual Data Region ID Field must only contain values present in Feature Region ID Field. See "
-                    err += helpers.row_string([i for i, elem in enumerate(idv_only_regions.list) if elem not in ftr_region_info.list]) + "."
+                    err += arcpy_extras.row_string([i for i, elem in enumerate(idv_only_regions.list) if elem not in ftr_region_info.list]) + "."
                     pop_ageGrp_info.setErrorMessage(err)
                     
         if pop_ageGrp_info.exists and not pop_data_fields.hasError():
             ageGrp_unique = list(set(pop_ageGrp_info.list))
-            ageGrp_invalid = [group for group in ageGrp_unique if group not in helpers.const_age_grps]
+            ageGrp_invalid = [group for group in ageGrp_unique if group not in census.constants.age_grps]
             # Check if there are any invalid age groups
             if len(ageGrp_invalid) != 0:
                 err = "Age Group Field must only contain valid age groups. See "
-                err += helpers.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem not in helpers.const_age_grps]) + "."
+                err += arcpy_extras.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem not in census.constants.age_grps]) + "."
                 pop_data_fields.setErrorMessage(err)
             elif pop_region_info.exists:
                 ageGrp_dict = {}
@@ -788,22 +787,34 @@ class IDP:
             idv_data_fields = idvWOAge_data_fields
             pop_data_fields = popWOAge_data_fields
         
-        idv_fields_name = helpers.get_valueTableValues(idv_data_fields)[0]
+        idv_fields_name = arcpy_extras.get_valueTableValues(idv_data_fields)[0]
         idv_region_name = idv_fields_name[0]
         idv_age_name = idv_fields_name[1] if byAge.value else None
-        pop_fields_name = helpers.get_valueTableValues(pop_data_fields)[0]
+        pop_fields_name = arcpy_extras.get_valueTableValues(pop_data_fields)[0]
         pop_region_name = pop_fields_name[0]
         pop_pop_name = pop_fields_name[1]
         pop_ageGrp_name = pop_fields_name[2] if byAge.value else None
-        ftr_fields_name = helpers.get_valueTableValues(ftr_fields)[0]
+        ftr_fields_name = arcpy_extras.get_valueTableValues(ftr_fields)[0]
         ftr_region_name = ftr_fields_name[0]
 
-        idv_data = helpers.get_pandas(idv_data_url.valueAsText, idv_fields_name)
-        pop_data = helpers.get_pandas(pop_data_url.valueAsText, pop_fields_name)
-        ftr_data = helpers.get_pandas(ftr_url.valueAsText, ftr_fields_name)
+        idv_data = arcpy_extras.get_pandas(idv_data_url.valueAsText, idv_fields_name)
+        pop_data = arcpy_extras.get_pandas(pop_data_url.valueAsText, pop_fields_name)
+        ftr_data = arcpy_extras.get_pandas(ftr_url.valueAsText, ftr_fields_name)
 
         if byAge.value:
-            idv_data["AgeGroup"] = idv_data[idv_age_name].apply(helpers.categorize_age)
+            def classify_age(age):
+                if age <= 4: return "0-4"
+                elif age <= 14: return "5-14"
+                elif age <= 24: return "15-24"
+                elif age <= 34: return "25-34"
+                elif age <= 44: return "35-44"
+                elif age <= 54: return "45-54"
+                elif age <= 64: return "55-64"
+                elif age <= 74: return "65-74"
+                elif age <= 84: return "75-84"
+                else: return "85up"
+
+            idv_data["AgeGroup"] = idv_data[idv_age_name].apply(classify_age)
             idv_data_groups = [idv_region_name, "AgeGroup"]
             pop_data_groups = [pop_region_name, pop_ageGrp_name]
             output_cols = ["RegionID", "AgeGroup", "EventCount", "PopCount"]
@@ -840,12 +851,12 @@ class IDP:
         equal100_rate_rows = np.where(event_data["EventCount"] == event_data[pop_pop_name])[0].tolist()
         if equal100_rate_rows:
             warn = "Event Count is equal to Population Count at "
-            warn += helpers.row_string(equal100_rate_rows) + "."
+            warn += arcpy_extras.row_string(equal100_rate_rows) + "."
             messages.addWarningMessage(warn)
         above100_rate_rows = np.where(event_data["EventCount"] > event_data[pop_pop_name])[0].tolist()
         if above100_rate_rows:
             warn = "Event Count is greater than to Population Count at "
-            warn += helpers.row_string(above100_rate_rows) + "."
+            warn += arcpy_extras.row_string(above100_rate_rows) + "."
             warn += "\n\nThe Rate Stabilizing Tool cannot produce reliable rates where the Event Count exceeds the Population Count."
             messages.addWarningMessage(warn)
 
@@ -860,10 +871,10 @@ class IDP:
 
         return
     
-class CPR:
+class CDR:
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = "Census Population Requester"
+        self.label = "Census Data Retriever"
         self.description = ""
 
     def getParameterInfo(self):
@@ -889,11 +900,11 @@ class CPR:
         param_data_fields.filters[0].type = "ValueList"
         param_data_fields.filters[0].list = ["5-year ACS", "Decennial"]
         param_data_fields.filters[1].type = "ValueList"
-        param_data_fields.filters[1].list = helpers.acs_years
+        param_data_fields.filters[1].list = census.constants.acs_years
         param_data_fields.filters[2].type = "ValueList"
         param_data_fields.filters[2].list = ["County", "Tract"]
         param_data_fields.filters[3].type = "ValueList"
-        param_data_fields.filters[3].list = list(helpers.state_to_fips.keys())
+        param_data_fields.filters[3].list = list(census.constants.state_to_fips.keys())
         param_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         param_out_table = arcpy.Parameter(
@@ -904,10 +915,32 @@ class CPR:
             direction="Output"
         )
 
+        param_geom_type = arcpy.Parameter(
+            displayName="Geometry Type",
+            name="GeometryType",
+            datatype="GPString",
+            parameterType="Optional",
+            direction="Input",
+            category="Geography (optional)"
+        )
+        param_geom_type.filter.type = "ValueList"
+        param_geom_type.filter.list = ["TIGER", "Cartographic"]
+
+        param_out_feature = arcpy.Parameter(
+            displayName="Output Feature",
+            name="OutputFeature",
+            datatype="GPFeatureLayer",
+            parameterType="Optional",
+            direction="Output",
+            category="Geography (optional)"
+        )
+
         params = [
             param_byAge,
             param_data_fields,
-            param_out_table
+            param_out_table,
+            param_geom_type,
+            param_out_feature
         ]
         return params
 
@@ -922,15 +955,17 @@ class CPR:
         byAge = parameters[0]
         req_param = parameters[1]
         out_table = parameters[2]
+        geom_type = parameters[3]
+        out_feature = parameters[4]
 
-        req_survey = helpers.get_valueTableValues(req_param)[0][0]
+        req_survey = arcpy_extras.get_valueTableValues(req_param)[0][0]
 
         if not req_survey:
             pass
         elif req_survey == "5-year ACS":
-            req_param.filters[1].list = helpers.acs_years
+            req_param.filters[1].list = census.constants.acs_years
         elif req_survey == "Decennial":
-            req_param.filters[1].list = helpers.dec_years
+            req_param.filters[1].list = census.constants.dec_years
 
         return
 
@@ -945,58 +980,24 @@ class CPR:
         byAge = parameters[0]
         req_param = parameters[1]
         out_table = parameters[2]
+        geom_type = parameters[3]
+        out_feature = parameters[4]
 
-        req_param_val = helpers.get_valueTableValues(req_param)[0]
+        req_param_val = arcpy_extras.get_valueTableValues(req_param)[0]
         req_survey = req_param_val[0]
         req_year = req_param_val[1]
         req_geography = req_param_val[2]
         req_state = req_param_val[3]
+        req_geom_type = geom_type.valueAsText
+        req_out_feature = out_feature.valueAsText
         
-        req_geography = req_geography.lower()
-        req_state = helpers.state_to_fips[req_state]
-        if req_survey == "5-year ACS":
-            req_year = req_year.split("-")[1]
-            total_pop_var = helpers.acs_tot_var
-            age_vars_dict = helpers.acs_age_vars
-            req_url = "https://api.census.gov/data/{}/acs/acs5?get={},GEO_ID,NAME&for={}:*&in=state:{}"
-        elif req_survey == "Decennial" and int(req_year) == 2020:
-            total_pop_var = helpers.dhc_tot_var
-            age_vars_dict = helpers.dhc_age_vars
-            req_url = "https://api.census.gov/data/{}/dec/dp?get={},GEO_ID,NAME&for={}:*&in=state:{}"
-        elif req_survey == "Decennial" and int(req_year) != 2020:
-            total_pop_var = helpers.sf1_tot_var
-            age_vars_dict = helpers.sf1_age_vars
-            req_url = "https://api.census.gov/data/{}/dec/sf1?get={},GEO_ID,NAME&for={}:*&in=state:{}"
-        if byAge.value:
-            var_cols = [var for var_list in age_vars_dict.values() for var in var_list]
-            req_vars = ",".join(var_cols)
-        else:
-            var_cols = [total_pop_var]
-            req_vars = total_pop_var
-        req_url = req_url.format(req_year, req_vars, req_geography, req_state)
-
-        resp = requests.get(req_url)
-        resp_df = pd.DataFrame.from_dict(resp.json())
-        resp_df.columns = resp_df.iloc[0].to_list()
-        resp_df = resp_df.drop(0)
-
-        geo_cols = [col for col in resp_df.columns if col not in var_cols]
-        resp_df = resp_df[geo_cols + var_cols]
-        resp_df["GEO_ID"] = resp_df["GEO_ID"].map(lambda geoid: geoid.split("US")[1])
-        resp_df[var_cols] = resp_df[var_cols].apply(pd.to_numeric)
-        if byAge.value:
-            for age_grp in age_vars_dict:
-                resp_df[age_grp] = resp_df[age_vars_dict[age_grp]].sum(axis=1)
-            resp_df = resp_df.drop(var_cols, axis = 1)
-            resp_df = resp_df.melt(
-                id_vars = geo_cols, 
-                value_vars = age_vars_dict.keys(),
-                var_name = 'age_group', 
-                value_name = 'pop_count')
-        else:
-            resp_df = resp_df.rename(columns = {total_pop_var: "pop_count"})
-
-        resp_df = resp_df.rename(columns = {"GEO_ID": "geoid", "NAME": "name"})
+        resp_df = census.data.get_census(
+            req_survey, 
+            req_year, 
+            req_geography, 
+            req_state, 
+            byAge.value
+        )
 
         output_np = np.rec.fromrecords(resp_df, names = list(resp_df.columns))
         arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
