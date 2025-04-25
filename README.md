@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://github.com/CEHI-code-repos/RateStabilizingToolbox">
-    Rate Stabilizing Toolbox
+    Rate Stabilizing Toolbox<img src="logo/RSTToolbox_hexsticker.png" width = "175" height = "200" align="right" /> 
   </a>
 </h1>
 
