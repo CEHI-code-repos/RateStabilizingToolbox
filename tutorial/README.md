@@ -21,7 +21,7 @@
     <img src="photos/CatalogPane.png" width="700">
 4.  Right click on the **Toolboxes** folder and select **Add Toolbox**  
     <img src="photos/AddToolbox.png" width="700">
-5.  Navigate to the location where you extracted the toolbox and select `RST_v2.pyt`
+5.  Navigate to the location where you extracted the toolbox and select `rate_stabilizing_toolbox.pyt`
 6.  The Rate Stabilizing Toolbox will now appear; expand the toolbox to reveal the Individual Data Processing and Rate Stabilizing tools
 
 ## Adding Your Data
