@@ -107,6 +107,19 @@ class RST:
         param_age_std_groups.filters[0].list = ["0", "5", "15", "25", "35", "45", "55", "65", "75"]
         param_age_std_groups.filters[1].type = "ValueList"
         param_age_std_groups.filters[1].list = ["14", "24", "34", "44", "54", "64", "74", "84", "up"]
+        
+        param_ci = arcpy.Parameter(
+            displayName="Credible Interval",
+            name="CredibleInterval",
+            datatype="GPValueTable",
+            parameterType="Required",
+            direction="Input"
+        )
+        param_ci.columns = [['Double', 'Credible Level']]
+        param_ci.values = [[0.95]]
+        param_ci.filters[0].type = "ValueList"
+        param_ci.filters[0].list = [0.9, 0.95, 0.99]
+        param_ci.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         param_rates_per = arcpy.Parameter(
             displayName="Rate",
@@ -124,6 +137,7 @@ class RST:
             param_data_fields,
             param_feature,
             param_feature_field,
+            param_ci,
             param_rates_per,
             param_out_table,
             param_age_grp_field,
@@ -145,11 +159,12 @@ class RST:
         data_fields = parameters[1]
         feature_url = parameters[2]
         feature_fields = parameters[3]
-        rates_per = parameters[4]
-        estimates_out = parameters[5]
-        data_ageGrp_id = parameters[6]
-        std_pop_yr = parameters[7]
-        age_std_groups = parameters[8]
+        ci_pct = parameters[4]
+        rates_per = parameters[5]
+        estimates_out = parameters[6]
+        data_ageGrp_id = parameters[7]
+        std_pop_yr = parameters[8]
+        age_std_groups = parameters[9]
 
         # Restrict age groups to only those present within data
         data_ageGrp_info  = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_ageGrp_id.valueAsText)
@@ -174,11 +189,12 @@ class RST:
         data_fields = parameters[1]
         feature_url = parameters[2]
         feature_fields = parameters[3]
-        rates_per = parameters[4]
-        estimates_out = parameters[5]
-        data_ageGrp_id = parameters[6]
-        std_pop_yr = parameters[7]
-        age_std_groups = parameters[8]
+        ci_pct = parameters[4]
+        rates_per = parameters[5]
+        estimates_out = parameters[6]
+        data_ageGrp_id = parameters[7]
+        std_pop_yr = parameters[8]
+        age_std_groups = parameters[9]
 
         data_fields_name = arcpy_extras.get_valueTableValues(data_fields)[0]
         data_region_info = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_fields_name[0])
@@ -309,11 +325,12 @@ class RST:
         data_fields = parameters[1]
         feature_url = parameters[2]
         feature_fields = parameters[3]
-        rates_per = parameters[4]
-        estimates_out = parameters[5]
-        data_ageGrp_id = parameters[6]
-        std_pop_yr = parameters[7]
-        age_std_groups = parameters[8]
+        ci_pct = parameters[4]
+        rates_per = parameters[5]
+        estimates_out = parameters[6]
+        data_ageGrp_id = parameters[7]
+        std_pop_yr = parameters[8]
+        age_std_groups = parameters[9]
         
         data_fields_name = arcpy_extras.get_valueTableValues(data_fields)[0]
         if data_ageGrp_id.valueAsText is not None:
@@ -324,6 +341,7 @@ class RST:
         feature_region_name = str(feature_fields.values[0][0])
 
         rates_per = int(rates_per.valueAsText)
+        ci_pct = float(ci_pct.valueAsText)
 
         # Get the age group distribution
         age_std_groups_arr = []
@@ -408,21 +426,22 @@ class RST:
                 output = model.runner.age_std(output, age_groups, std_pop, ages)
             age_groups.extend(age_std_groups_names)
         
-        medians, ci_chart, reliable = model.runner.get_medians(output, regions, age_groups)
+        medians, ci_lo, ci_hi, ci_chart = model.runner.get_medians(output, regions, age_groups, ci_pct)
 
         # If age standardized, combine output with prefixes, else just rename the output cols
         output = output_cols = []
         if age_std_groups.values is not None:
             medians = medians.add_prefix("median_")
+            ci_lo = ci_lo.add_prefix(f"CI{int(100 * ci_pct)}lower_")
+            ci_hi = ci_hi.add_prefix(f"CI{int(100 * ci_pct)}upper_")
             ci_chart = ci_chart.add_prefix("maxCI_")
-            reliable = reliable.add_prefix("reliable_")
-            output = pd.concat([medians, ci_chart, reliable], axis = 1)
+            output = pd.concat([medians, ci_lo, ci_hi, ci_chart], axis = 1)
             for i, med in enumerate(medians.columns):
-                output_cols.extend([ medians.columns[i], ci_chart.columns[i], reliable.columns[i] ])
+                output_cols.extend([ medians.columns[i], ci_lo.columns[i], ci_hi.columns[i], ci_chart.columns[i] ])
             output = output[output_cols].reset_index()
         else:
-            output = pd.concat([medians, ci_chart, reliable], axis = 1).reset_index()
-            output_cols = ["median", "maxCI", "reliable"]
+            output = pd.concat([medians, ci_lo, ci_hi, ci_chart], axis = 1).reset_index()
+            output_cols = ["median", f"CI{int(100 * ci_pct)}lower", f"CI{int(100 * ci_pct)}upper", "maxCI"]
 
         # Write out the final table
         output_cols = [data_region_name] + output_cols

@@ -83,16 +83,13 @@
         -   **Region ID** - *GEOID*
         -   **Event Count** - *EventCount*
         -   **Population Count** - *PopCount*
-2.  Fill in the **Input Table** and **Input Table Fields** with their respective values:
-    -   **Input Feature** - `MI_county_mort_ageGrouped`
-    -   **Input Feature Fields**
-        -   **Region ID** - *GEOID*
 3.  Fill in the **Input Feature** and **Input Feature Field** with the respective values:
 	-   **Input Feature** - `MI_carto`
 	-   **Input Feature Field**
 		-   **Region ID** - *GEOID*
-3.  The **Rate** paramter will determine the denominator of rates generated; we wil leave this at per 100,000
-4.  Open the **Age Standardization** drop-down. This menu allows for the optional generation of age standardized rates. Fill the following fields with the following values:
+4.  The **Rate** parameter will determine the denominator of rates generated; we wil leave this at per 100,000
+5.  The **Credible Interval** parameter will determine the credible level of the credible interval generated; we wil leave this at 0.95.
+6.  Open the **Age Standardization** drop-down. This menu allows for the optional generation of age standardized rates. Fill the following fields with the following values:
     -   **Age Group Field** - *AgeGroup*
     -   **Standard Population Year** - 2010
     -   **Standard Age Groups**  
@@ -102,14 +99,15 @@
         | 65              | up              |
         | 35              | up              |
     These settings will generate crude rates for each age group within the *AgeGroup* field, and age standardized rates for individuals 35 to 64, 65 and up, and 35 and up using the 2010 standard population. Not specifying these fields will generate crude rates for the total population.
-5.  Name your **Output Table** `MI_county_ageStd_RST` and note its location; if your output table does not appear in the standalone tables automatically you may have to navigate to its location and add it in manually  
+7.  Name your **Output Table** `MI_county_ageStd_RST` and note its location; if your output table does not appear in the standalone tables automatically you may have to navigate to its location and add it in manually  
     <img src="photos/RSTFilledWAges.png" width="350">
-6.  Run the tool
+8.  Run the tool
 
 ## Understanding the output
 1.  Within the **Contents** pane, right click on `MI_county_ageStd_RST` and click **Open**
 2.  Notice that each age group has three columns:
     -   *median_{ageGroup}* - the estimated rate
-    -   *maxCI_{ageGroup}* - the maximum confidence interval able to be generated for the estimate rate
-    -   *reliable_{ageGroup}* - 1 = maximum confidence interval is greater than or equal to 0.95, 0 =  maximum confidence interval is less than 0.95
+    -   *CI{credibleLevel}lower_{ageGroup}* - the lower bound of the credible interval
+    -   *CI{credibleLevel}upper_{ageGroup}* - the upper bound of the credible interval
+    -   *maxCI_{ageGroup}* - the maximum credible interval able to be generated for the estimate rate
 3.  At this point you are all set! Simply join your table to your feature and symbolize those areas with reliable estimates.

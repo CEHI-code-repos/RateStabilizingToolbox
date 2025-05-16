@@ -88,24 +88,26 @@ def age_std(output, ages, std_pop, wtages):
 
 # ***MODIFIED*** Now outputs minimum CI for reliable estimates in each region, along with true/false value for reliability. Does not suppress estimates.
 # Calculate medians
-def get_medians(output, regions, ages):
+def get_medians(output, regions, ages, ci_pct):
     ci_values = [0.5, 0.75, 0.9, 0.95, 0.99]
     medians = pd.DataFrame(np.median(output, 2), regions, ages)
+    alpha = (1 - ci_pct) / 2
+    ci_lo = pd.DataFrame(np.quantile(output, alpha, 2), regions, ages)
+    ci_hi = pd.DataFrame(np.quantile(output, 1 - alpha, 2), regions, ages)
     ci_chart = np.zeros(medians.shape)
     for ci in ci_values:
         alpha = (1 - ci) / 2
-        hi = np.quantile(output, 1 - alpha, 2)
         lo = np.quantile(output, alpha, 2)
+        hi = np.quantile(output, 1 - alpha, 2)
         rp = medians / (hi - lo)
         ci_chart[rp >= 1] = ci
-        if ci == 0.95:
-            reliable = pd.DataFrame(rp >= 1, regions, ages)
     ci_chart = pd.DataFrame(ci_chart, regions, ages)
     if ages == [""]:
-        medians = medians.rename(columns = {'': "median"})
-        reliable = reliable.rename(columns = {'': "reliable"})
-        ci_chart = ci_chart.rename(columns = {'': "max_reliable_ci"})
-    return [medians, ci_chart, reliable]
+        medians = medians.rename(columns={"": "median"})
+        ci_lo = ci_lo.rename(columns={"": "ci_low"})
+        ci_hi = ci_hi.rename(columns={"": "ci_high"})
+        ci_chart = ci_chart.rename(columns={"": "max_reliable_ci"})
+    return [medians, ci_lo, ci_hi, ci_chart]
 
 # Model testing
 def get_estimates(data_url, adj_url, region_id, event_id, pop_id, estimates_dir, estimates_name, rates_per = 1e5, group_id = None, std_pop_yr = None, age_std_groups = None, age_std_group_names = None):
