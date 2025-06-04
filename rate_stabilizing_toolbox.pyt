@@ -281,13 +281,13 @@ class RST:
                 if len(data_only_regions) != 0:
                     err = "Input Table Region ID Field must only contain values present in Input Feature Region ID Field. See "
                     err += arcpy_extras.row_string([i for i, elem in enumerate(data_region_info.list) if elem not in feature_region_info.list]) + "."
-                    data_ageGrp_id.setErrorMessage(err)
+                    data_fields.setErrorMessage(err)
                 # Check if Feature contains Region IDs not present in Data
                 feature_only_regions = set(feature_region_info.list) - set(data_region_info.list)
                 if len(feature_only_regions) != 0:
                     err = "Input Feature Region ID Field must only contain values present in Input Table Region ID Field. See "
                     err += arcpy_extras.row_string([i for i, elem in enumerate(feature_region_info.list) if elem not in data_region_info.list]) + "."
-                    data_ageGrp_id.setErrorMessage(err)
+                    feature_fields.setErrorMessage(err)
             
         if data_ageGrp_info.exists and not data_ageGrp_id.hasError():
             ageGrp_unique = list(set(data_ageGrp_info.list))
