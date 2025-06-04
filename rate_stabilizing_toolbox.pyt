@@ -757,8 +757,8 @@ class IDP:
                 idv_only_regions = set(idv_region_info.list) - set(ftr_region_info.list)
                 if len(idv_only_regions) != 0:
                     err = "Input Individual Data Region ID Field must only contain values present in Feature Region ID Field. See "
-                    err += arcpy_extras.row_string([i for i, elem in enumerate(idv_only_regions.list) if elem not in ftr_region_info.list]) + "."
-                    pop_ageGrp_info.setErrorMessage(err)
+                    err += arcpy_extras.row_string([i for i, elem in enumerate(idv_region_info.list) if elem not in ftr_region_info.list]) + "."
+                    idv_data_fields.setErrorMessage(err)
                     
         if pop_ageGrp_info.exists and not pop_data_fields.hasError():
             ageGrp_unique = list(set(pop_ageGrp_info.list))
