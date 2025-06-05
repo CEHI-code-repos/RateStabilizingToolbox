@@ -14,7 +14,7 @@
 2.  Unzip the zip file
 3.  Open ArcGIS Pro. Create a new Map Project. Within the Catalog Pane,
     right click on thse Toolboxes and Add Toolbox.
-4.  Check out the [Tutorial](tutorial/tutorial.md)
+4.  Check out the [Tutorial](tutorial/README.md)
 
 ## Tools
 
