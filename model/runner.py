@@ -59,7 +59,7 @@ def gibbs_rucar(Y, n, adj, std_pop):
     num_region, num_group = Y.shape # Auxiliary variables
     m0 = 3
     A = Y.sum(0) / n.sum(0) * std_pop
-    A = num_group * A / sum(A)
+    A = 6 * A / sum(A)
     theta_out = np.zeros([num_region, num_group, 400])
     if arcpy_available: arcpy.SetProgressor("step", "Generating estimates...", 0, 6000, 1)
     for s in range(6000):
