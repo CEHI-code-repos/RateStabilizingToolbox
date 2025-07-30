@@ -1,0 +1,10 @@
+---
+title: 3. Producing Stabilized Rates
+---
+
+The final step of a RSTbx workflow is producing stabilized rates!
+
+## Requirements
+
+### Aggregate event and population data
+

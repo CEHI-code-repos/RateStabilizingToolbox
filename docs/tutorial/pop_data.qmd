@@ -1,0 +1,164 @@
+---
+title: 1. Acquiring Population Data
+---
+
+The first step in any RSTbx workflow is a boundary file and population data. 
+
+Luckly, the [Census Data Retriever](../reference/CDR.qmd) can do both of those things for us!
+
+## Requirements
+
+### Boundary file
+
+The RSTbx supports any geographic unit for which you can provide a boundary file for.
+Typically, people utilize Census boundary files for counties or tracts, which can be
+downloaded in [TIGER](https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html)
+or [Cartographic](https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html) 
+forms from the Census website.
+
+There are three requirements of these boundary files:
+
+-   They should specify polygon/multipolygon boundaries.
+-   There must be at least one column which must uniquely identify each region within the
+    boundary file. These unique identifiers must be the same as those within the population
+    table and the event table.
+-   There should be no geographic regions within the boundary file which are not adjancent
+    to at least one other area.  
+
+::: {.callout-note}
+Using Census TIGER boundaries rather than cartographic boundaries will mitigate the concern 
+of geographic units without any adjacent areas, because TIGER boundaries represent political 
+boundaries which span over water.
+:::
+
+### Population Tables
+
+Population tables can come in two formats depending on your eventual goals. If you
+would like to produce crude rates, then the table should have one record (row) for
+each region. It would look something like this:
+
+::: {.table-auto}
+|GEOID | PopulationCount|
+|:-----|---------------:|
+|01001 |           59285|
+|01003 |          239945|
+|01005 |           24757|
+|...   |             ...|
+|72149 |           21778|
+|72151 |           29868|
+|72153 |           33509|
+:::
+
+(Also see **MI_pop** within the **data.gdb**)
+
+If you would like to produce age-adjusted rates, then the table should have one
+record for each region age-group combination. It would like something like this:
+
+::: {.table-auto}
+|GEOID |AgeGroup | PopulationCount|
+|:-----|:--------|---------------:|
+|01001 |0-4      |            3430|
+|01001 |5-14     |            7749|
+|01001 |15-24    |            7339|
+|...   |...      |             ...|
+|72153 |65-74    |            4527|
+|72153 |75-84    |            3223|
+|72153 |85up     |             571|
+:::
+
+(Also see **MI_pop_grouped** within the **data.gdb**)
+
+:::{.callout-important}
+The following are valid age groups: "0-4", "5-14", "15-24", "25-34", "35-44", "45-54", 
+"55-64", "65-74", "75-84", "85up". Within the population table they must be written
+exactly how they are listed here (i.e., "85 and up" would not be a valid age group).
+:::
+
+## Using custom data
+
+Being able to use custom data within the RSTbx is a great asset. 
+
+One potential use of custom data within the RSTbx is to calculate rates at custom geographic regions. For example, if
+I wanted to calculate the heart disease death rate at [Texas Public Health Regions](https://www.dshs.texas.gov/regional-local-health-operations/public-health-regions), 
+I could use a custom boundary file and population table to do so!
+
+Another potential use is to calculate group-specific rates. 
+For example, if I desired to calculate the heart disease death rate for females, I could 
+filter down my event data to just female deaths and use a custom population table with total 
+female population.
+
+:::{.callout-note}
+The [RSTr package](https://github.com/CEHI-code-repos/RSTr) has additional models which are 
+more well suited to calculating group-specific rates. We encourage you to check the RSTr out 
+if you are looking to calculating group-specific rates.
+:::
+
+
+All the requirements above for your boundary file and population table will still hold
+even if you choose to use custom boundaries or population tables.
+
+## Census Data Retriever (CDR)
+
+:::{.callout-note}
+All succeeding tutorials will rely on custom data provided within the **data.gdb**, but this
+tutorial will help you become familiar with the CDR. You will not use this data in any of the
+other tutorials.
+:::
+
+If you are looking to generate rates at the county (or county-equivalent) or tract level,
+the Census Data Retriever can prepare your data for you.
+
+As discussed above, two pieces of data must be acquired as part of the first step of an RSTbx
+workflow: a boundary file and a population file. 
+
+Our eventual goal is to produce both crude and age-adjusted rates, so we will require a boundary 
+file for both, a total population table, and an age-stratified table.
+
+### Producing crude rates
+
+In order to create our crude rates, we will need a total population table. Let's create one for Michigan counties using the 2015-2019 5-year ACS.
+
+If you haven't already, download and extract the latest release of the [RSTbx](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest).
+
+1.  Open up ArcGIS Pro and create a new Map Project.  
+
+2.  Open up the **Catalog Pane**.  
+
+3.  Within the **Catalog Pane**, right click on **Toolboxes** and select **Add Toolbox**.  
+
+4.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
+
+5.  Open the **Census Data Retriever**  
+
+6.  Set the following parameters and **Run**:
+    
+    **Age-Stratified**: *Unchecked* (We only need total population numbers)  
+    **Request Parameters**:  
+    -   **Survey**: *5-year ACS*  
+    -   **Year**: *2015-2019*  
+    -   **Geography**: *County*  
+    -   **State**: *Michigan*  
+
+    **Output Table**: *mi_county_acs1519_pop*
+
+### Producing age-adjusted rates
+
+Now that we have downloaded our total population table. We still require a age-stratified population table to calculate age-adjusted rates. Additionally, we still require boundaries. Fortunately, we can take care of both of these in one step.
+
+1.  Returning back to the **Census Data Retriever**, set the following parameters:
+    
+    **Age-Stratified**: *Checked* (We want an age-stratified table)  
+
+    Keep all the **Request Parameters** the same:  
+    -   **Survey**: *5-year ACS*  
+    -   **Year**: *2015-2019*  
+    -   **Geography**: *County*  
+    -   **State**: *Michigan*  
+
+    **Output Table**: *mi_county_acs1519_pop_grouped*
+
+    We also want to download our boundaries, so open up the **Geography** dropdown.  
+
+    Set the **Geometry Type** to *Cartographic* and the **Output Feature** to *mi_county_carto*. **Run**.
+
+We have seen how the **Census Data Retriever** can be used to prepare population data, but we still need to prepare our event data. If you are interested in using individual, record level event data, consider moving on to [2a. Preparing Individual-Level Event Data](indiv_event_data.qmd). If you are interested in using aggregate event data, consider moving on to [2b. Preparing Aggregate Event Data](agg_event_data.qmd).

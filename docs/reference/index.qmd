@@ -1,0 +1,28 @@
+# Reference
+
+## Tools {.doc .doc-index}
+
+| | |
+| --- | --- |
+| [Census Data Retriever](CDR.qmd) | Retrieving data from the Census can be hard. The CDR aims to simplify that process by doing it for you! Simply specify the survey/census of interest and the geographic unit and the CDR will generate a  (optionally, age-stratified) total population table. The CDR can also optionally download Census TIGER or cartographic boundaries. |
+| [Individual Data Processor](IDP.qmd) | It is often the case that your data is collected at the individual level. These data will be need to be aggregated to the region (and age group, for age standardized rates) for rate calculations within the Rate Stabilizing Tool. This tool was developed to make that process easier! |
+| [Rate Stabilizing Tool](RST.qmd) | The RST offers an easy-to-use interface for the restricted univariate conditional autoregressive (UCAR) model. With the RST, you can generate small area estimates, credible intervals for those estimates, and the maximum credible levels at which these estimates would be considered reliable. |
+
+: {tbl-colwidths="[25,75]"}
+
+## Example Data {.doc .doc-index}
+
+We provide example data to help you work through examples within throughout the documentation. You can find all the example data within the **data.gdb** inside of every release.
+
+| | |
+| --- | --- |
+| **mi_carto** | Cartographic county boundaries for the state of Michigan. |
+| **mi_event_indiv** | Simulated individual event table created from 1979 Michigan county myocardial infarcation (ICD-9 code 410.0) death counts. |
+| **mi_event_agg** | Aggregate event table of 1979 Michigan county myocardial infarcation (ICD-9 code 410.0) death counts. |
+| **mi_event_agg_strat** | Age-stratified aggregate event table of 1979 Michigan county myocardial infarcation (ICD-9 code 410.0) death counts. |
+| **mi_pop** | Total population table of Michigan counties in 1979 |
+| **mi_pop_strat** | Age-stratified population table of Michigan counties in 1979 |
+
+: {tbl-colwidths="[25,75]"}
+
+All event and population data was downloaded from [CDC WONDER's Compressed Mortality 1979-1998 database](https://wonder.cdc.gov/cmf-icd9.html).

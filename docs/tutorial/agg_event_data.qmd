@@ -1,0 +1,137 @@
+---
+title: 2b. Preparing Aggregate Event Data
+---
+
+The second step of any RSTbx workflow is to prepare your event data. For aggregate 
+event data, this means joining the aggregate data with the population table we 
+acquired earlier.
+
+The RSTbx does not have its own tool to do this for you, but its easy in ArcGIS Pro!
+
+## Requirements
+
+### Event Tables
+
+Aggregate event tables should be formated to have one record (aka row) for each
+region. It would look something like:
+
+::: {.table-auto}
+|GEOID | EventCount|
+|:-----|----------:|
+|01001 |          3|
+|01003 |         12|
+|01005 |          0|
+|...   |        ...|
+|72149 |          7|
+|72151 |         10|
+|72153 |         24|
+:::
+
+If you would like to produce age-adjusted rates, aggregate event tables should
+have one record (aka row) for reach region-age group combination. Like this:
+
+::: {.table-auto}
+|GEOID |AgeGroup | EventCount|
+|:-----|:--------|----------:|
+|01001 |0-4      |          0|
+|01001 |5-14     |          1|
+|01001 |15-24    |          0|
+|...   |...      |        ...|
+|72153 |65-74    |          5|
+|72153 |75-84    |          7|
+|72153 |85up     |          9|
+:::
+
+(Also see **mi_mort_agg**)
+
+:::{.callout-important}
+The following are valid age groups: "0-4", "5-14", "15-24", "25-34", "35-44", "45-54", 
+"55-64", "65-74", "75-84", "85up". Within the population table they must be written
+exactly how they are listed here (i.e., "85 and up" would not be a valid age group).
+:::
+
+### Producing crude rates
+
+In order to create our crude rates, we will need a total aggregate event and population 
+table. Let's create one using the total population table in **data.gdb** (**mi_pop**)
+and the aggregate total event data in **data.gdb** (**mi_event_agg**).
+
+If you haven't already, download and extract the latest release of the [RSTbx](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest).
+
+1.  Open up ArcGIS Pro and create a new Map Project.  
+
+2.  Open up the **Catalog Pane**.  
+
+3.  Within the **Catalog Pane**, right click on **Toolboxes** and select **Add Toolbox**.  
+    
+    ![](../photos/general/add_toolbox.png){width=500}  
+
+4.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
+
+    You should now see the RST's three tools  
+    
+    ![](../photos/general/toolbox_tools_dropdown.png){width=500}
+
+5.  Open up the **Catalog Pane**.
+
+6.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
+    the RSTbx and find *data.gdb*.
+
+    ![](../photos/general/add_database.png){width=500}
+
+7.  Within the *data.gdb*, right click on *mi_carto*, *mi_event_agg*, and *mi_pop*, and **Add to Current Map**.
+
+5.  Click on **Analysis** within the main ribbon, click on **Tools**, and search for **Make Query Table**.  
+    ![](){width=300}
+
+    ::: {.callout-note}
+    **Make Query Table** is a powerful tool that can be used for many functions. In this case, we are preforming a simple one-to-one
+    join. You could also perform this using the **Add Join** tool. We will use **Make Query Table** here to get you familiar with it
+    before we preform a slightly more complex join for age-stratified tables.
+    :::
+
+
+8.  Set the population table (*mi_pop*) and the aggregate event table (*mi_event_agg*) as the **Input Tables**.
+    Since we would like to join these two tables based on their region ID (aka *GEOID*), we must create an expression that checks if
+    the region ID of a row in one table is equal to the other.
+    
+9.  We would like our final table to only have three fields: *GEOID*, *PopulationCount*, and *EventCount*. From the *Fields* dropdown
+    select *mi_pop.GEOID*, *mi_pop.PopulationCount*, and *mi_event_agg.EventCount*.
+
+10. Under **Expresssion** set *Where mi_event_agg.GEOID is equal to*. Within the final dropdown you should see a list of GEOIDs and
+    two radio buttons (**Values** and **Fields**). Select **Fields**. Open up the final dropdown again, and notice that the options
+    have changed. Select *mi_pop.GEOID*. Your final expression should read *Where mi_event_agg.GEOID is equal to mi_pop.GEOID*.
+
+11. Set the **Table Name** as *mi_agg_joined* and **Run**.
+
+### Producing age-adjusted rates
+
+In order to create our age-adjusted rates, we will need an age stratified aggregate event and population 
+table. Let's create one using the age stratified population table in **data.gdb** (**mi_pop_strat**)
+and the aggregate age stratified event data in **data.gdb** (**mi_event_agg_strat**).
+
+1.  Return back to the **Make Query Table** tool. (**Analysis** -> **Tools** -> search for **Make Query Table**).
+
+2.  Set the population table (*mi_pop_strat*) and the aggregate event table (*mi_event_agg_strat*) as the **Input Tables**.
+    
+3.  We would like our final table to only have four fields: *GEOID*, *AgeGroup*, *PopulationCount*, and *EventCount*. From 
+    the *Fields* dropdown select *mi_pop.GEOID*, *mi_pop.AgeGroup*, *mi_pop.PopulationCount*, and *mi_event_agg.EventCount*.
+
+    Since we would like to join these two tables based on their region ID (aka *GEOID*) AND their age group, we must create an 
+    expression that checks if BOTH the region ID and age group of a row in one table is equal to the other.
+
+    Under **Expresssion** set *Where mi_pop_strat.GEOID is equal to*. Within the final dropdown you should see a list of GEOIDs and
+    two radio buttons (**Values** and **Fields**). Select **Fields**. Open up the final dropdown again, and notice that the options
+    have changed. Select *mi_event_agg_strat.GEOID*.
+
+    Click on **Add Clause**. Set the second sub-expression to be *mi_pop_strat.AgeGroup is equal to*. Again, within the last
+    dropdown select the radio button for **Fields**, open the dropdown, and select *mi_event_agg_strat.AgeGroup*.
+
+    Your final expression should be *Where mi_pop_strat.GEOID is equal to mi_event_agg_strat.GEOID AND mi_pop_strat.AgeGroup is
+    equal to mi_event_agg_strat.AgeGroup*.
+    
+4.  Set the **Table Name** as *mi_agg_joined_strat* and **Run**.
+
+![]()
+
+We have seen how the **Make Query Table** can be used to prepare aggregate event data, but now we have to actually produce rates. If you are would like to continue on using aggregate event data, consider moving on to [3. Producing Stabilized Rates](stab_rates.qmd). If you are interested in using individual, record-level event data, consider also taking a look at [2b. Preparing Individual-Level Event Data](indiv_event_data.qmd).

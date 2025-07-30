@@ -1,0 +1,24 @@
+project:
+  type: website
+
+website: 
+  title: RSTbx
+  page-navigation: true
+  navbar: 
+    left:
+      - file: index.qmd
+        text: Getting Started
+      - text: Tutorials
+        menu:
+          - href: tutorial/pop_data.qmd
+          - href: tutorial/indiv_event_data.qmd
+          - href: tutorial/agg_event_data.qmd
+          - href: tutorial/stab_rates.qmd
+      - file: reference/index.qmd
+        text: Reference
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true

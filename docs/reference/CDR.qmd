@@ -1,0 +1,71 @@
+# Census Data Retriever
+
+Retrieving data from the Census can be hard. The CDR aims to simplify that process by doing it for you! Simply specify the survey/census of interest and the geographic unit and the CDR will generate a  (optionally, age-stratified) total population table. The CDR can also optionally download Census TIGER or cartographic boundaries.
+
+![](../photos/cdr/empty.png){width=300}
+
+## Parameters {.doc-section .doc-section-parameters}
+
+
+<code>[**Age Stratified**]{.parameter-name} [:]{.parameter-annotation-sep} [checkbox]{.parameter-annotation}</code>
+
+:   Should the output table be stratified by age group?
+
+#### Request Parameters
+
+>   <code>[**Survey**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation} [ = ]{.parameter-default-sep} [5-year ACS \| Decennial]{.parameter-default}</code>
+>   
+>   :   Name of survey/census used to produce the output population table.
+>   
+>   <code>[**Year**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
+>   
+>   :   Year/year(s) of specified <code>[**Survey**]{.parameter-name}</code>.
+>   
+>   <code>[**Geography**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation} [ = ]{.parameter-default-sep} [County \| Tract]{.parameter-default}</code>
+>   
+>   :   Geographic unit for which to generate the output population table.
+>   
+>   <code>[**State**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
+>   
+>   :   State to generate the output population table for.
+
+<code>[**Output Table**]{.parameter-name} [:]{.parameter-annotation-sep} [table path]{.parameter-annotation}</code>
+
+:   Path of the output population table.
+
+<code>[**Geometry Type**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation} [ = ]{.parameter-default-sep} [TIGER \| Cartographic]{.parameter-default}</code>
+
+:   Type of boundary file to retrieve.
+
+<code>[**Output Feature**]{.parameter-name} [:]{.parameter-annotation-sep} [feature path]{.parameter-annotation}</code>
+
+:   Path of output boundary file.
+
+## Examples {.doc-section .doc-section-examples}
+
+**Scenario 1:** I want to download an age stratified county population table from
+2015-2019 ACS data for the state of Illinois.
+
+-   Age Stratified: Checked
+-   Request Parameters:
+    -   Survey: 5-year ACS
+    -   Year: 2015-2019
+    -   Geography: County
+    -   State: Illinois
+-   Output Table: some_project.gdb/population_table
+-   Geometry Type: Leave blank
+-   Output Feature: Leave blank
+
+**Scenario 2:** I want to download tract total population table from the 2020 
+decennial census data for the state of North Carolina. I also 
+want to download a TIGER North Caroline tract boundary file.
+
+-   Age Stratified: Unchecked
+-   Request Parameters:
+    -   Survey: Decennial
+    -   Year: 2020
+    -   Geography: Tract
+    -   State: North Carolina
+-   Output Table: some_project.gdb/population_table
+-   Geometry Type: TIGER
+-   Output Feature: some_project.gdb/boundaries

@@ -1,0 +1,119 @@
+# Rate Stabilizing Tool
+
+The RST offers an easy-to-use interface for the restricted univariate conditional autoregressive (UCAR) model. With the RST, you can generate small area estimates, credible intervals for those estimates, and the maximum credible levels at which these estimates would be considered reliable.
+
+![](../photos/RST.png){width=300}
+
+## Parameters {.doc-section .doc-section-parameters}
+
+<code>[**Input Table**]{.parameter-name} [:]{.parameter-annotation-sep} [table path]{.parameter-annotation}</code>
+
+:   Table with one record for each <code>[**Region ID**]{.parameter-name}</code> **OR** one record for each 
+    <code>[**Region ID**]{.parameter-name}</code> and <code>[**Age Group**]{.parameter-name}</code> combination.
+    Table must include two additional columns, which specify the <code>[**Event Count**]{.parameter-name}</code> and 
+    <code>[**Population Count**]{.parameter-name}</code> for each <code>[**Region ID**]{.parameter-name}</code> **OR** 
+    <code>[**Region ID**]{.parameter-name}</code> and <code>[**Age Group**]{.parameter-name}</code> combination.
+
+    Table can easily be generated using the [Individual Data Processor](IDP.qmd).
+
+#### Input Table Fields
+
+>   <code>[**Region ID**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which uniquely identifies each region.
+>   
+>   <code>[**Event Count**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which contains the number of events in each region **OR** region-age group combination.
+>   
+>   <code>[**Population Count**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which contains the population of each region **OR** region-age group combination.
+
+<code>[**Input Feature**]{.parameter-name} [:]{.parameter-annotation-sep} [feature path]{.parameter-annotation}</code>
+
+:   Boundary file which contains one record for each <code>[**Region ID**]{.parameter-name}</code>.
+
+#### Input Feature Fields
+
+>   <code>[**Region ID**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which uniquely identifies each region.
+
+<code>[**Credible Level**]{.parameter-name} [:]{.parameter-annotation-sep} [double]{.parameter-annotation} [ = ]{.parameter-default-sep} [0.9 \| 0.95 \| 0.99]{.parameter-default}</code>
+
+:   Credible level at which credible intervals should be generated for.
+
+<code>[**Per**]{.parameter-name} [:]{.parameter-annotation-sep} [integer]{.parameter-annotation}</code>
+
+:   Output rate denominator (i.e. per 100,000).
+
+<code>[**Output Table**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
+
+:   Path of the output table which contains the stabilized rates.
+
+<code>[**Age Group Field**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
+
+:   Name of column within the <code>[**Input Table**]{.parameter-name}</code> which specifies age groups.  
+    The following are valid age groups: "0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up".
+
+<code>[**Standard Population Year**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation} [ = ]{.parameter-default-sep} [2000 \| 2010]{.parameter-default}</code>
+
+:   The reference year of the standard population used to compute age-adjusted rates.
+
+#### Standardized Age Groups
+
+>   <code>[**Lower age group**]{.parameter-name} [:]{.parameter-annotation-sep} [array of strings]{.parameter-annotation}</code>
+>   
+>   :   One or more lower bounds defining the age ranges to include in age standardization. For example, to specify age ranges
+        35 and older, and 45 to 64, use "35" and "45".
+>   
+>   <code>[**Upper age group**]{.parameter-name} [:]{.parameter-annotation-sep} [array of strings]{.parameter-annotation}</code>
+>   
+>   :   One or more upper bounds defining the age ranges to include in age standardization. For example, to specify age ranges
+        35 and older, and 45 to 64, use "up" and "64".
+
+## Examples {.doc-section .doc-section-examples}
+
+**Scenario 1:** I want to generate crude rates per 100,000 with credible intervals at the 0.95 credible level
+for some Michigan event data I have. I already took that data and ran it through the [Individual Data Processor](IDP.qmd). 
+You can find it as **MI_mort_pop** within **data.gdb**.
+
+-   Input Table: data.gdb/MI_mort_pop
+-   Input Table Fields:
+    -   Region ID: GEOID
+    -   Event Count: MortalityCount
+    -   Population Count: PopulationCount
+-   Input Feature: data.gdb/MI_carto
+-   Input Feature Fields:
+    -   Region ID: GEOID
+-   Credible Level: 0.95
+-   Per: 100,000
+-   Output Table: some_project.gdb/crude_rates
+-   Age Group Field: Leave blank
+-   Standard Population Year: Leave blank
+-   Standardized Age Groups:
+    -   Lower age group: Leave blank
+    -   Upper age group: Leave blank
+
+**Scenario 2:** I want to generate age-adjusted rates for the age ranges of 35 and 64, 64 and up, and 34 and up. 
+I want these rates to be per 100,000 with credible intervals at the 0.95 credible level for some Michigan event 
+data I have. I already took that data and ran it through the [Individual Data Processor](IDP.qmd). You can find 
+it as **MI_mort_pop_grouped** within **data.gdb**.
+
+-   Input Table: data.gdb/MI_mort_pop_grouped
+-   Input Table Fields:
+    -   Region ID: GEOID
+    -   Event Count: MortalityCount
+    -   Population Count: PopulationCount
+-   Input Feature: data.gdb/MI_carto
+-   Input Feature Fields:
+    -   Region ID: GEOID
+-   Credible Level: 0.95
+-   Per: 100,000
+-   Output Table: some_project.gdb/age_adj_rates
+-   Age Group Field: AgeGroup
+-   Standard Population Year: 2010
+-   Standardized Age Groups:
+    -   Lower age group: 35, 64, 34
+    -   Upper age group: 64, up, up

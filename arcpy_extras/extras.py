@@ -1,4 +1,5 @@
 import arcpy
+import numpy as np
 import pandas as pd
 from collections import namedtuple
 
@@ -61,3 +62,13 @@ def row_string(indexes):
     else:
         output = "rows " + output
     return output
+
+def pandas_to_table(pd_table, out_path):
+    output_np = np.rec.fromrecords(pd_table, names = list(pd_table.columns))
+    arcpy.da.NumPyArrayToTable(output_np, out_path)
+
+    arc_project = arcpy.mp.ArcGISProject("Current")
+    cur_map = arc_project.activeMap
+    if cur_map:
+        cur_map.addDataFromPath(out_path)
+        

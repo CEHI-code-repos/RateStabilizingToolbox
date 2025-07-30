@@ -1,0 +1,103 @@
+# Individual Data Processor
+
+It is often the case that your data is collected at the individual level. These data will be need to be aggregated to the region (and age group, for age standardized rates) for rate calculations within the Rate Stabilizing Tool. This tool was developed to make that process easier!
+
+![](../photos/IDP.png){width=300}
+
+## Parameters {.doc-section .doc-section-parameters}
+
+<code>[**Age Stratified**]{.parameter-name} [:]{.parameter-annotation-sep} [checkbox]{.parameter-annotation}</code>
+
+:   Should the output table be stratified by age group?
+
+<code>[**Input Individual Data**]{.parameter-name} [:]{.parameter-annotation-sep} [table path]{.parameter-annotation}</code>
+
+:   Table with one record for individual event. Each record must contain a <code>[**Region ID**]{.parameter-name}</code> and,
+    if <code>[**Age Stratified**]{.parameter-name}</code> is checked, <code>[**Age**]{.parameter-name}</code>.
+
+#### Input Individual Data Fields
+
+>   <code>[**Region ID**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which uniquely identifies each region.
+>   
+>   <code>[**Age**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which specifies the age of the individual the event occurred to.
+
+<code>[**Input Population Data**]{.parameter-name} [:]{.parameter-annotation-sep} [table path]{.parameter-annotation}</code>
+
+:   Table with one record for each <code>[**Region ID**]{.parameter-name}</code> **OR** one record for each 
+    <code>[**Region ID**]{.parameter-name}</code> and <code>[**Age Group**]{.parameter-name}</code> combination.
+    Table must an additional column which specifies the <code>[**Population Count**]{.parameter-name}</code> for
+    each <code>[**Region ID**]{.parameter-name}</code> **OR** <code>[**Region ID**]{.parameter-name}</code> and 
+    <code>[**Age Group**]{.parameter-name}</code> combination.
+
+    Table can easily be generated using the [Census Data Retriever](CDR.qmd).
+
+#### Input Population Data Fields
+
+>   <code>[**Region ID**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which uniquely identifies each region.
+>   
+>   <code>[**Population Count**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which contains the population of each region **OR** region-age group combination.
+>   
+>   <code>[**Age Group**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
+>   
+>   :   Name of column which specifies age groups.  
+>       The following are valid age groups: "0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85up".
+
+<code>[**Input Feature**]{.parameter-name} [:]{.parameter-annotation-sep} [feature path]{.parameter-annotation}</code>
+
+:   Boundary file which contains one record for each <code>[**Region ID**]{.parameter-name}</code>.
+
+#### Input Feature Fields
+
+>   <code>[**Region ID**]{.parameter-name} [:]{.parameter-annotation-sep} [field name]{.parameter-annotation}</code>
+>   
+>   :   Name of column which uniquely identifies each region.
+
+<code>[**Output Table**]{.parameter-name} [:]{.parameter-annotation-sep} [table path]{.parameter-annotation}</code>
+
+:   Path of the output table which contains the combined population and aggregated event data.
+
+## Examples {.doc-section .doc-section-examples}
+
+**Scenario 1:** I want to generate crude rates for some Michigan event data I have. I first need to aggregate 
+this data (**MI_mort_indiv** within **data.gdb**) and combine it with population data from 
+[Census Data Retriever](CDR.qmd) (**MI_pop** within **data.gdb**).
+
+-   Age Stratified: Unchecked
+-   Input Individual Data: data.gdb/MI_mort_indiv
+-   Input Individual Data Fields:
+    -   Region ID: GEOID
+-   Input Population Data: data.gdb/MI_pop
+-   Input Population Data Fields:
+    -   Region ID: GEOID
+    -   Population Count: PopulationCount
+-   Input Feature: data.gdb/MI_carto
+-   Input Feature Fields:
+    -   Region ID: GEOID
+-   Output Table: some_project.gdb/MI_mort_pop
+
+**Scenario 2:** I want to generate age-adjusted rates for some Michigan event data I have. I first need to aggregate 
+this data (**MI_mort_indiv** within **data.gdb**) and combine it with population data from 
+[Census Data Retriever](CDR.qmd) (**MI_pop_grouped** within **data.gdb**).
+
+-   Age Stratified: Checked
+-   Input Individual Data: data.gdb/MI_mort_indiv
+-   Input Individual Data Fields:
+    -   Region ID: GEOID
+    -   Age: Age
+-   Input Population Data: data.gdb/MI_pop_grouped
+-   Input Population Data Fields:
+    -   Region ID: GEOID
+    -   Population Count: PopulationCount
+    -   Age Group: AgeGroup
+-   Input Feature: data.gdb/MI_carto
+-   Input Feature Fields:
+    -   Region ID: GEOID
+-   Output Table: some_project.gdb/MI_mort_pop

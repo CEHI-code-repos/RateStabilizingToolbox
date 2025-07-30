@@ -442,11 +442,9 @@ class RST:
         else:
             output = pd.concat([medians, ci_lo, ci_hi, ci_chart], axis = 1).reset_index()
             output_cols = ["median", f"CI{int(100 * ci_pct)}lower", f"CI{int(100 * ci_pct)}upper", "maxCI"]
+        output.columns = [data_region_name] + output_cols
 
-        # Write out the final table
-        output_cols = [data_region_name] + output_cols
-        output_np = np.rec.fromrecords(output, names = output_cols)
-        arcpy.da.NumPyArrayToTable(output_np, estimates_out.valueAsText)
+        arcpy_extras.pandas_to_table(output, estimates_out.valueAsText)
     
         messages.AddMessage("Model finished!")
 
@@ -820,6 +818,10 @@ class IDP:
         pop_data = arcpy_extras.get_pandas(pop_data_url.valueAsText, pop_fields_name)
         ftr_data = arcpy_extras.get_pandas(ftr_url.valueAsText, ftr_fields_name)
 
+        idv_data = idv_data.rename(columns = {idv_region_name: "GEOID"})
+        pop_data = pop_data.rename(columns = {pop_region_name: "GEOID", pop_pop_name: "PopulationCount"})
+        ftr_data = ftr_data.rename(columns = {ftr_region_name: "GEOID"})
+
         if byAge.value:
             def classify_age(age):
                 if age <= 4: return "0-4"
@@ -833,54 +835,55 @@ class IDP:
                 elif age <= 84: return "75-84"
                 else: return "85up"
 
-            idv_data["AgeGroup"] = idv_data[idv_age_name].apply(classify_age)
-            idv_data_groups = [idv_region_name, "AgeGroup"]
-            pop_data_groups = [pop_region_name, pop_ageGrp_name]
-            output_cols = ["RegionID", "AgeGroup", "EventCount", "PopCount"]
+            pop_data = pop_data.rename(columns = {pop_ageGrp_name: "AgeGroup"})
+            idv_data = (
+                idv_data
+                .assign(AgeGroup = lambda x: x[idv_age_name].apply(classify_age))                
+                .drop(idv_age_name, axis = 1)
+            )
+            data_groups = ["GEOID", "AgeGroup"]
         else:
-            idv_data_groups = [idv_region_name]
-            pop_data_groups = [pop_region_name]
-            output_cols = ["RegionID", "EventCount", "PopCount"]
+            data_groups = ["GEOID"]
 
-            if pop_data[pop_region_name].nunique() != len(pop_data.index):  
-                pop_data = pop_data.groupby(pop_region_name).agg({pop_pop_name : 'sum'})
+            if pop_data["GEOID"].nunique() != len(pop_data.index):  
+                pop_data = pop_data.groupby("GEOID").agg({"PopulationCount" : 'sum'}).reset_index()
                 messages.addWarningMessage("Repeated Input Population Data Region IDs were detected. Population Counts were aggregated to totals.")
 
         # If there are regions in Feature not in Population Data, set population to 0 and warn
-        if set(pop_data[pop_region_name].unique()) != set(ftr_data[ftr_region_name].unique()):
-            index_names = [pop_region_name]
+        if set(pop_data["GEOID"].unique()) != set(ftr_data["GEOID"].unique()):
+            index_names = ["GEOID"]
             if byAge.value:
-                index_names.append(pop_ageGrp_name)
-                index_vals = [ftr_data[ftr_region_name].unique(), pop_data[pop_ageGrp_name].unique()]
+                index_names.append("AgeGroup")
+                index_vals = [ftr_data["GEOID"].unique(), pop_data["AgeGroup"].unique()]
                 index = pd.MultiIndex.from_product(index_vals, names = index_names)
             else:
-                index = ftr_data[ftr_region_name].unique().tolist()
+                index = ftr_data["GEOID"].unique().tolist()
             pop_data = pop_data.set_index(index_names).reindex(index, fill_value=0).reset_index()
             messages.addWarningMessage("Input Feature Region ID Field contains at least one value not present in Input Population Data Region ID Field. Population within these regions were assumed to be 0.")
         
-        event_data = idv_data.groupby(idv_data_groups, as_index= False).size()
-        event_data = event_data.merge(pop_data, 
-            right_on= pop_data_groups, 
-            left_on= idv_data_groups, 
-            how = "right")
-        event_data["EventCount"] = event_data["size"].fillna(value=0).astype(int)
-        event_data = event_data[pop_data_groups + ["EventCount", pop_pop_name]]
+        event_counts = idv_data.groupby(data_groups).size().reset_index(name="EventCount")
+        event_data = (
+            pop_data
+            .merge(event_counts, on=data_groups, how="left")
+            .fillna({"EventCount": 0})
+            .assign(EventCount=lambda df: df["EventCount"].astype(int))
+            .filter(items = data_groups + ["PopulationCount", "EventCount"])
+        )
 
         # Warn if Event Count >= Population Count
-        equal100_rate_rows = np.where(event_data["EventCount"] == event_data[pop_pop_name])[0].tolist()
+        equal100_rate_rows = np.where(event_data["EventCount"] == event_data["PopulationCount"])[0].tolist()
         if equal100_rate_rows:
             warn = "Event Count is equal to Population Count at "
             warn += arcpy_extras.row_string(equal100_rate_rows) + "."
             messages.addWarningMessage(warn)
-        above100_rate_rows = np.where(event_data["EventCount"] > event_data[pop_pop_name])[0].tolist()
+        above100_rate_rows = np.where(event_data["EventCount"] > event_data["PopulationCount"])[0].tolist()
         if above100_rate_rows:
             warn = "Event Count is greater than to Population Count at "
             warn += arcpy_extras.row_string(above100_rate_rows) + "."
             warn += "\n\nThe Rate Stabilizing Tool cannot produce reliable rates where the Event Count exceeds the Population Count."
             messages.addWarningMessage(warn)
 
-        output_np = np.rec.fromrecords(event_data, names = output_cols)
-        arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
+        arcpy_extras.pandas_to_table(event_data, out_table.valueAsText)
 
         return
 
@@ -1056,10 +1059,8 @@ class CDR:
             req_state, 
             byAge.value
         )
+        arcpy_extras.pandas_to_table(resp_df, out_table.valueAsText)
 
-        output_np = np.rec.fromrecords(resp_df, names = list(resp_df.columns))
-        arcpy.da.NumPyArrayToTable(output_np, out_table.valueAsText)
-        
         census.geometry.get_geometry(
             req_geography,
             req_geom_type, 

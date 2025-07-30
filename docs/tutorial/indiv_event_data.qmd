@@ -1,0 +1,116 @@
+---
+title: 2a. Preparing Individual-Level Event Data
+---
+
+The second step of any RSTbx workflow is to prepare your event data. For individual-
+level event data, this means aggregating the data to the region or (region-age group
+combination) and joining that data with the population table we acquired earlier.
+
+Luckly, the [Individual Data Processor](../reference/IDP.qmd) can do both of those things for us!
+
+## Requirements
+
+### Event Tables
+
+Individual-level event tables should be formated to have one record (aka row) for each
+event that occured. If crude-rates are needed, only one column is truly necessary within
+table: the region identifier. It would look something like:
+
+::: {.table-auto}
+|GEOID |
+|:-----|
+|01001 |
+|01001 |
+|01003 |
+|...   |
+|72149 |
+|72149 |
+|72149 |
+:::
+
+If you would like to produce age-adjusted rates, an additional age column is necessary.
+Like this:
+
+::: {.table-auto}
+|GEOID |    Age|
+|:-----|------:|
+|01001 |     23|
+|01001 |     58|
+|01003 |      4|
+|...   |    ...|
+|72149 |     87|
+|72149 |     65|
+|72149 |     56|
+:::
+
+(Also see **mi_mort_indiv**)
+
+## Individual Data Processor
+
+### Producing crude rates
+
+In order to create our crude rates, we will need an un-stratified aggregate event and population 
+table. Let's create one using the non-age stratified population table in **data.gdb** (**mi_pop**)
+and the simulated individual-level event data in **data.gdb** (**mi_mort_indiv**).
+
+If you haven't already, download and extract the latest release of the [RSTbx](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest).
+
+1.  Open up ArcGIS Pro and create a new Map Project.  
+
+2.  Open up the **Catalog Pane**.  
+
+3.  Within the **Catalog Pane**, right click on **Toolboxes** and select **Add Toolbox**.  
+    
+4.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
+
+5.  Open up the **Catalog Pane**.
+
+6.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
+    the RSTbx and find *data.gdb*.
+
+7.  Within the *data.gdb*, right click on *MI_carto*, *MI_mort_indiv*, and *MI_pop*, and **Add to Current Map**.
+
+5.  Open the **Individual Data Processor**  
+
+6.  Set the following parameters and **Run**:
+    
+    **Age Stratified**: *Unchecked* (We only need total and event population numbers)  
+    **Input Individual Data**: *mi_event_indiv*  
+    **Input Individual Data Fields**:  
+    -   **Region ID**: *GEOID*  
+    **Input Population Data**: *MI_pop*  
+    **Input Population Data Fields**:  
+    -   **Region ID**: *GEOID*  
+    -   **Population Count**: *PopulationCount*  
+    **Input Feature**: *MI_carto*  
+    **Input Feature Fields**:  
+    -   **Region ID**: *GEOID*  
+    **Output Table**: *mi_agg_joined*
+
+### Producing age-adjusted rates
+
+In order to create our age-adjusted rates, we will need a stratified aggregate event and population 
+table. Let's create one using the age stratified population table in **data.gdb** (**mi_pop_grouped**)
+and the simulated individual-level event data in **data.gdb** (**mi_mort_indiv**).
+
+1.  Returning back to the **Individual Data Processor**, set the following parameters and **Run**:
+    
+    **Age Stratified**: *Checked*  
+    **Input Individual Data**: *mi_event_indiv*  
+    **Input Individual Data Fields**:  
+    -   **Region ID**: *GEOID*  
+    -   **Age**: *Age*  
+
+    **Input Population Data**: *MI_pop_strat*  
+    **Input Population Data Fields**:  
+    -   **Region ID**: *GEOID*  
+    -   **Population Count**: *PopulationCount*  
+    -   **Age Group**: *AgeGroup*  
+
+    **Input Feature**: *mi_carto*  
+    **Input Feature Fields**:  
+    -   **Region ID**: *GEOID*  
+
+    **Output Table**: *mi_agg_joined_strat*
+
+We have seen how the **Individual Data Processor** can be used to prepare population data, but now we have to actually produce rates. If you are interested in using individual, record level event data, consider moving on to [3. Producing Stabilized Rates](stab_rates.qmd). If you are interested in using aggregate event data, consider also taking a look at [2b. Preparing Aggregate Event Data](agg_event_data.qmd).

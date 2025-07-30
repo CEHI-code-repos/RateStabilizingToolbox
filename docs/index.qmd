@@ -1,0 +1,54 @@
+---
+toc: false
+---
+
+# Rate Stabilizing Toolbox (RSTbx) <img src="photos/general/logo.png" width = "175" height = "200" align="right" />
+
+Generate reliable, local-level age-standardized measures of chronic disease within ArcGIS Pro.
+
+Want to explore additional Conditional Autoregressive (CAR) models? Check
+out the [RSTr package](https://github.com/CEHI-code-repos/RSTr).
+
+## Set up
+
+1.  Download the [latest release](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest)'s zip file
+2.  Unzip the zip file
+3.  Open ArcGIS Pro. Create a new Map Project. Within the Catalog Pane,
+    right click on thse Toolboxes and Add Toolbox.
+
+## Tools
+
+The RSTbx was designed to be a comprehensive suite of tools that 
+allow you to easily generate small area estimates based off of 
+complete data (e.g. not survey data). These tools were designed to
+work in sequential order (See flowchart below).
+
+![](photos/general/flowchart.png){fig-align="center"}
+
+### Census Data Retriever (CDR)
+
+Retrieving data from the Census can be hard. The CDR aims to simplify
+that process by doing it for you! Simply specify the survey/census
+of interest and the geographic unit and the CDR will generate a 
+(optionally, age-stratified) total population table. The CDR can also
+optionally download Census TIGER or cartographic boundaries.
+
+### Individual Data Processing (IDP)
+
+It is often the case that your data is collected at the individual
+level. These data will be need to be aggregated to the region (and age
+group, for age standardized rates) for rate calculations within the Rate
+Stabilizing Tool. This tool was developed to make that process easier!
+
+### Rate Stabilizing Tool (RST)
+
+The RST offers an easy-to-use interface for the restricted univariate
+conditional autoregressive (UCAR) model. With the RST, you can generate
+small area estimates, credible intervals for those estimates, and the
+maximum credible levels at which these estimates would be considered
+reliable.
+
+## Contact Us
+
+Encounter a bug or have an idea for a feature? Open an [Github issue](https://github.com/CEHI-code-repos/RateStabilizingToolbox/issues/new/choose).  
+Have additional questions? Send us an email at [cehi@uic.edu](mailto:cehi@uic.edu).
