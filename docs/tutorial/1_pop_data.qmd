@@ -37,7 +37,6 @@ Population tables can come in two formats depending on your eventual goals. If y
 would like to produce crude rates, then the table should have one record (row) for
 each region. It would look something like this:
 
-::: {.table-auto}
 |GEOID | PopulationCount|
 |:-----|---------------:|
 |01001 |           59285|
@@ -47,14 +46,12 @@ each region. It would look something like this:
 |72149 |           21778|
 |72151 |           29868|
 |72153 |           33509|
-:::
 
 (Also see **MI_pop** within the **data.gdb**)
 
 If you would like to produce age-adjusted rates, then the table should have one
 record for each region age-group combination. It would like something like this:
 
-::: {.table-auto}
 |GEOID |AgeGroup | PopulationCount|
 |:-----|:--------|---------------:|
 |01001 |0-4      |            3430|
@@ -64,7 +61,6 @@ record for each region age-group combination. It would like something like this:
 |72153 |65-74    |            4527|
 |72153 |75-84    |            3223|
 |72153 |85up     |             571|
-:::
 
 (Also see **MI_pop_grouped** within the **data.gdb**)
 
@@ -118,19 +114,11 @@ file for both, a total population table, and an age-stratified table.
 
 In order to create our crude rates, we will need a total population table. Let's create one for Michigan counties using the 2015-2019 5-year ACS.
 
-If you haven't already, download and extract the latest release of the [RSTbx](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest).
+If you haven't already, [set up](../index.qmd#set-up) the Rate Stabilizing Toolbox.
 
-1.  Open up ArcGIS Pro and create a new Map Project.  
+1.  Open the **Census Data Retriever**  
 
-2.  Open up the **Catalog Pane**.  
-
-3.  Within the **Catalog Pane**, right click on **Toolboxes** and select **Add Toolbox**.  
-
-4.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
-
-5.  Open the **Census Data Retriever**  
-
-6.  Set the following parameters and **Run**:
+2.  Set the following parameters and **Run**:
     
     **Age-Stratified**: *Unchecked* (We only need total population numbers)  
     **Request Parameters**:  
@@ -161,4 +149,4 @@ Now that we have downloaded our total population table. We still require a age-s
 
     Set the **Geometry Type** to *Cartographic* and the **Output Feature** to *mi_county_carto*. **Run**.
 
-We have seen how the **Census Data Retriever** can be used to prepare population data, but we still need to prepare our event data. If you are interested in using individual, record level event data, consider moving on to [2a. Preparing Individual-Level Event Data](indiv_event_data.qmd). If you are interested in using aggregate event data, consider moving on to [2b. Preparing Aggregate Event Data](agg_event_data.qmd).
+We have seen how the **Census Data Retriever** can be used to prepare population data, but we still need to prepare our event data. If you are interested in using individual, record level event data, consider moving on to [2a. Preparing Individual-Level Event Data](2a_indiv_event_data.qmd). If you are interested in using aggregate event data, consider moving on to [2b. Preparing Aggregate Event Data](2b_agg_event_data.qmd).

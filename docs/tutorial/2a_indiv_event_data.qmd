@@ -16,7 +16,6 @@ Individual-level event tables should be formated to have one record (aka row) fo
 event that occured. If crude-rates are needed, only one column is truly necessary within
 table: the region identifier. It would look something like:
 
-::: {.table-auto}
 |GEOID |
 |:-----|
 |01001 |
@@ -26,12 +25,10 @@ table: the region identifier. It would look something like:
 |72149 |
 |72149 |
 |72149 |
-:::
 
 If you would like to produce age-adjusted rates, an additional age column is necessary.
 Like this:
 
-::: {.table-auto}
 |GEOID |    Age|
 |:-----|------:|
 |01001 |     23|
@@ -41,7 +38,6 @@ Like this:
 |72149 |     87|
 |72149 |     65|
 |72149 |     56|
-:::
 
 (Also see **mi_mort_indiv**)
 
@@ -113,4 +109,4 @@ and the simulated individual-level event data in **data.gdb** (**mi_mort_indiv**
 
     **Output Table**: *mi_agg_joined_strat*
 
-We have seen how the **Individual Data Processor** can be used to prepare population data, but now we have to actually produce rates. If you are interested in using individual, record level event data, consider moving on to [3. Producing Stabilized Rates](stab_rates.qmd). If you are interested in using aggregate event data, consider also taking a look at [2b. Preparing Aggregate Event Data](agg_event_data.qmd).
+We have seen how the **Individual Data Processor** can be used to prepare population data, but now we have to actually produce rates. If you are interested in using individual, record level event data, consider moving on to [3. Producing Stabilized Rates](3_stab_rates.qmd). If you are interested in using aggregate event data, consider also taking a look at [2b. Preparing Aggregate Event Data](2a_agg_event_data.qmd).

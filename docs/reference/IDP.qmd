@@ -1,6 +1,6 @@
 # Individual Data Processor
 
-It is often the case that your data is collected at the individual level. These data will be need to be aggregated to the region (and age group, for age standardized rates) for rate calculations within the Rate Stabilizing Tool. This tool was developed to make that process easier!
+{{< var description.idp >}}
 
 ![](../photos/IDP.png){width=300}
 

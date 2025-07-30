@@ -13,8 +13,9 @@ out the [RSTr package](https://github.com/CEHI-code-repos/RSTr).
 
 1.  Download the [latest release](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest)'s zip file
 2.  Unzip the zip file
-3.  Open ArcGIS Pro. Create a new Map Project. Within the Catalog Pane,
-    right click on thse Toolboxes and Add Toolbox.
+3.  Open up a Map Project within ArcGIS Pro. 
+4.  Within the Catalog Pane, right click on thse Toolboxes and Add Toolbox. 
+5.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
 
 ## Tools
 
@@ -27,26 +28,15 @@ work in sequential order (See flowchart below).
 
 ### Census Data Retriever (CDR)
 
-Retrieving data from the Census can be hard. The CDR aims to simplify
-that process by doing it for you! Simply specify the survey/census
-of interest and the geographic unit and the CDR will generate a 
-(optionally, age-stratified) total population table. The CDR can also
-optionally download Census TIGER or cartographic boundaries.
+{{< var description.cdr >}}
 
 ### Individual Data Processing (IDP)
 
-It is often the case that your data is collected at the individual
-level. These data will be need to be aggregated to the region (and age
-group, for age standardized rates) for rate calculations within the Rate
-Stabilizing Tool. This tool was developed to make that process easier!
+{{< var description.idp >}}
 
 ### Rate Stabilizing Tool (RST)
 
-The RST offers an easy-to-use interface for the restricted univariate
-conditional autoregressive (UCAR) model. With the RST, you can generate
-small area estimates, credible intervals for those estimates, and the
-maximum credible levels at which these estimates would be considered
-reliable.
+{{< var description.rst >}}
 
 ## Contact Us
 

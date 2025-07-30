@@ -1,6 +1,6 @@
 # Census Data Retriever
 
-Retrieving data from the Census can be hard. The CDR aims to simplify that process by doing it for you! Simply specify the survey/census of interest and the geographic unit and the CDR will generate a  (optionally, age-stratified) total population table. The CDR can also optionally download Census TIGER or cartographic boundaries.
+{{< var description.cdr >}}
 
 ![](../photos/cdr/empty.png){width=300}
 

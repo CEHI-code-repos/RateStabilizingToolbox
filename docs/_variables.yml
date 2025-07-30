@@ -1,0 +1,4 @@
+description:
+  cdr: "Retrieving data from the Census can be hard. The CDR aims to simplify that process by doing it for you! Simply specify the survey/census of interest and the geographic unit and the CDR will generate a  (optionally, age-stratified) total population table. The CDR can also optionally download Census TIGER or cartographic boundaries."
+  idp: "It is often the case that your data is collected at the individual level. These data will be need to be aggregated to the region (and age group, for age standardized rates) for rate calculations within the Rate Stabilizing Tool. This tool was developed to make that process easier!"
+  rst: "The RST offers an easy-to-use interface for the restricted univariate conditional autoregressive (UCAR) model. With the RST, you can generate small area estimates, credible intervals for those estimates, and the maximum credible levels at which these estimates would be considered reliable."

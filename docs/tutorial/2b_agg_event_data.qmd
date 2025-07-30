@@ -15,7 +15,6 @@ The RSTbx does not have its own tool to do this for you, but its easy in ArcGIS 
 Aggregate event tables should be formated to have one record (aka row) for each
 region. It would look something like:
 
-::: {.table-auto}
 |GEOID | EventCount|
 |:-----|----------:|
 |01001 |          3|
@@ -25,12 +24,10 @@ region. It would look something like:
 |72149 |          7|
 |72151 |         10|
 |72153 |         24|
-:::
 
 If you would like to produce age-adjusted rates, aggregate event tables should
 have one record (aka row) for reach region-age group combination. Like this:
 
-::: {.table-auto}
 |GEOID |AgeGroup | EventCount|
 |:-----|:--------|----------:|
 |01001 |0-4      |          0|
@@ -40,7 +37,6 @@ have one record (aka row) for reach region-age group combination. Like this:
 |72153 |65-74    |          5|
 |72153 |75-84    |          7|
 |72153 |85up     |          9|
-:::
 
 (Also see **mi_mort_agg**)
 
@@ -64,20 +60,12 @@ If you haven't already, download and extract the latest release of the [RSTbx](h
 
 3.  Within the **Catalog Pane**, right click on **Toolboxes** and select **Add Toolbox**.  
     
-    ![](../photos/general/add_toolbox.png){width=500}  
-
 4.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
-
-    You should now see the RST's three tools  
-    
-    ![](../photos/general/toolbox_tools_dropdown.png){width=500}
 
 5.  Open up the **Catalog Pane**.
 
 6.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
     the RSTbx and find *data.gdb*.
-
-    ![](../photos/general/add_database.png){width=500}
 
 7.  Within the *data.gdb*, right click on *mi_carto*, *mi_event_agg*, and *mi_pop*, and **Add to Current Map**.
 
@@ -131,7 +119,5 @@ and the aggregate age stratified event data in **data.gdb** (**mi_event_agg_stra
     equal to mi_event_agg_strat.AgeGroup*.
     
 4.  Set the **Table Name** as *mi_agg_joined_strat* and **Run**.
-
-![]()
 
 We have seen how the **Make Query Table** can be used to prepare aggregate event data, but now we have to actually produce rates. If you are would like to continue on using aggregate event data, consider moving on to [3. Producing Stabilized Rates](stab_rates.qmd). If you are interested in using individual, record-level event data, consider also taking a look at [2b. Preparing Individual-Level Event Data](indiv_event_data.qmd).

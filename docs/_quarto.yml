@@ -10,15 +10,14 @@ website:
         text: Getting Started
       - text: Tutorials
         menu:
-          - href: tutorial/pop_data.qmd
-          - href: tutorial/indiv_event_data.qmd
-          - href: tutorial/agg_event_data.qmd
-          - href: tutorial/stab_rates.qmd
+          - href: tutorial/1_pop_data.qmd
+          - href: tutorial/2a_indiv_event_data.qmd
+          - href: tutorial/2b_agg_event_data.qmd
+          - href: tutorial/3_stab_rates.qmd
       - file: reference/index.qmd
         text: Reference
 
 format:
   html:
     theme: cosmo
-    css: styles.css
     toc: true

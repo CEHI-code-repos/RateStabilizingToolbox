@@ -1,6 +1,6 @@
 # Rate Stabilizing Tool
 
-The RST offers an easy-to-use interface for the restricted univariate conditional autoregressive (UCAR) model. With the RST, you can generate small area estimates, credible intervals for those estimates, and the maximum credible levels at which these estimates would be considered reliable.
+{{< var description.rst >}}
 
 ![](../photos/RST.png){width=300}
 
