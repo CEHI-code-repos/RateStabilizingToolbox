@@ -2,38 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/RST.html</loc>
-    <lastmod>2025-07-30T16:05:41.179Z</lastmod>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/CDR.html</loc>
-    <lastmod>2025-07-30T16:05:41.179Z</lastmod>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
   <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/indiv_event_data.html</loc>
-    <lastmod>2025-07-30T16:05:41.179Z</lastmod>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/1_pop_data.html</loc>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
   <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/agg_event_data.html</loc>
-    <lastmod>2025-07-30T16:05:41.179Z</lastmod>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/3_stab_rates.html</loc>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/index.html</loc>
-    <lastmod>2025-07-30T16:05:41.177Z</lastmod>
+    <lastmod>2025-07-30T16:47:31.078Z</lastmod>
   </url>
   <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/stab_rates.html</loc>
-    <lastmod>2025-07-30T16:05:41.180Z</lastmod>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/2b_agg_event_data.html</loc>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
   <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/pop_data.html</loc>
-    <lastmod>2025-07-30T16:05:41.180Z</lastmod>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/2a_indiv_event_data.html</loc>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/index.html</loc>
-    <lastmod>2025-07-30T16:05:41.179Z</lastmod>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/IDP.html</loc>
-    <lastmod>2025-07-30T16:05:41.179Z</lastmod>
+    <lastmod>2025-07-30T16:47:31.080Z</lastmod>
   </url>
 </urlset>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2a. Preparing Individual-Level Event Data – RSTbx</title>
+<title>2b. Preparing Aggregate Event Data – RSTbx</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -69,7 +69,6 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<link rel="stylesheet" href="../styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -99,19 +98,19 @@ ul.task-list li input[type="checkbox"] {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-tutorials">    
         <li>
-    <a class="dropdown-item" href="../tutorial/pop_data.html">
+    <a class="dropdown-item" href="../tutorial/1_pop_data.html">
  <span class="dropdown-text">1. Acquiring Population Data</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../tutorial/indiv_event_data.html">
+    <a class="dropdown-item" href="../tutorial/2a_indiv_event_data.html">
  <span class="dropdown-text">2a. Preparing Individual-Level Event Data</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../tutorial/agg_event_data.html">
+    <a class="dropdown-item" href="../tutorial/2b_agg_event_data.html">
  <span class="dropdown-text">2b. Preparing Aggregate Event Data</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../tutorial/stab_rates.html">
+    <a class="dropdown-item" href="../tutorial/3_stab_rates.html">
  <span class="dropdown-text">3. Producing Stabilized Rates</span></a>
   </li>  
     </ul>
@@ -139,9 +138,6 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements">Requirements</a>
   <ul class="collapse">
   <li><a href="#event-tables" id="toc-event-tables" class="nav-link" data-scroll-target="#event-tables">Event Tables</a></li>
-  </ul></li>
-  <li><a href="#individual-data-processor" id="toc-individual-data-processor" class="nav-link" data-scroll-target="#individual-data-processor">Individual Data Processor</a>
-  <ul class="collapse">
   <li><a href="#producing-crude-rates" id="toc-producing-crude-rates" class="nav-link" data-scroll-target="#producing-crude-rates">Producing crude rates</a></li>
   <li><a href="#producing-age-adjusted-rates" id="toc-producing-age-adjusted-rates" class="nav-link" data-scroll-target="#producing-age-adjusted-rates">Producing age-adjusted rates</a></li>
   </ul></li>
@@ -153,7 +149,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">2a. Preparing Individual-Level Event Data</h1>
+<h1 class="title">2b. Preparing Aggregate Event Data</h1>
 </div>
 
 
@@ -170,66 +166,32 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The second step of any RSTbx workflow is to prepare your event data. For individual- level event data, this means aggregating the data to the region or (region-age group combination) and joining that data with the population table we acquired earlier.</p>
-<p>Luckly, the <a href="../reference/IDP.html">Individual Data Processor</a> can do both of those things for us!</p>
+<p>The second step of any RSTbx workflow is to prepare your event data. For aggregate event data, this means joining the aggregate data with the population table we acquired earlier.</p>
+<p>The RSTbx does not have its own tool to do this for you, but its easy in ArcGIS Pro!</p>
 <section id="requirements" class="level2">
 <h2 class="anchored" data-anchor-id="requirements">Requirements</h2>
 <section id="event-tables" class="level3">
 <h3 class="anchored" data-anchor-id="event-tables">Event Tables</h3>
-<p>Individual-level event tables should be formated to have one record (aka row) for each event that occured. If crude-rates are needed, only one column is truly necessary within table: the region identifier. It would look something like:</p>
-<div class="table-auto">
+<p>Aggregate event tables should be formated to have one record (aka row) for each region. It would look something like:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
 <th style="text-align: left;">GEOID</th>
+<th style="text-align: right;">EventCount</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">01001</td>
+<td style="text-align: right;">3</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">01001</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">01003</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">…</td>
+<td style="text-align: right;">12</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">72149</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">72149</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">72149</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>If you would like to produce age-adjusted rates, an additional age column is necessary. Like this:</p>
-<div class="table-auto">
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th style="text-align: left;">GEOID</th>
-<th style="text-align: right;">Age</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">01001</td>
-<td style="text-align: right;">23</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">01001</td>
-<td style="text-align: right;">58</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">01003</td>
-<td style="text-align: right;">4</td>
+<td style="text-align: left;">01005</td>
+<td style="text-align: right;">0</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">…</td>
@@ -237,27 +199,83 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td style="text-align: left;">72149</td>
-<td style="text-align: right;">87</td>
+<td style="text-align: right;">7</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">72149</td>
-<td style="text-align: right;">65</td>
+<td style="text-align: left;">72151</td>
+<td style="text-align: right;">10</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">72149</td>
-<td style="text-align: right;">56</td>
+<td style="text-align: left;">72153</td>
+<td style="text-align: right;">24</td>
 </tr>
 </tbody>
 </table>
+<p>If you would like to produce age-adjusted rates, aggregate event tables should have one record (aka row) for reach region-age group combination. Like this:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">GEOID</th>
+<th style="text-align: left;">AgeGroup</th>
+<th style="text-align: right;">EventCount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">01001</td>
+<td style="text-align: left;">0-4</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">01001</td>
+<td style="text-align: left;">5-14</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">01001</td>
+<td style="text-align: left;">15-24</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">…</td>
+<td style="text-align: left;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">72153</td>
+<td style="text-align: left;">65-74</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">72153</td>
+<td style="text-align: left;">75-84</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">72153</td>
+<td style="text-align: left;">85up</td>
+<td style="text-align: right;">9</td>
+</tr>
+</tbody>
+</table>
+<p>(Also see <strong>mi_mort_agg</strong>)</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
-<p>(Also see <strong>mi_mort_indiv</strong>)</p>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The following are valid age groups: “0-4”, “5-14”, “15-24”, “25-34”, “35-44”, “45-54”, “55-64”, “65-74”, “75-84”, “85up”. Within the population table they must be written exactly how they are listed here (i.e., “85 and up” would not be a valid age group).</p>
+</div>
+</div>
 </section>
-</section>
-<section id="individual-data-processor" class="level2">
-<h2 class="anchored" data-anchor-id="individual-data-processor">Individual Data Processor</h2>
 <section id="producing-crude-rates" class="level3">
 <h3 class="anchored" data-anchor-id="producing-crude-rates">Producing crude rates</h3>
-<p>In order to create our crude rates, we will need an un-stratified aggregate event and population table. Let’s create one using the non-age stratified population table in <strong>data.gdb</strong> (<strong>mi_pop</strong>) and the simulated individual-level event data in <strong>data.gdb</strong> (<strong>mi_mort_indiv</strong>).</p>
+<p>In order to create our crude rates, we will need a total aggregate event and population table. Let’s create one using the total population table in <strong>data.gdb</strong> (<strong>mi_pop</strong>) and the aggregate total event data in <strong>data.gdb</strong> (<strong>mi_event_agg</strong>).</p>
 <p>If you haven’t already, download and extract the latest release of the <a href="https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest">RSTbx</a>.</p>
 <ol type="1">
 <li><p>Open up ArcGIS Pro and create a new Map Project.</p></li>
@@ -266,58 +284,42 @@ ul.task-list li input[type="checkbox"] {
 <li><p>Navigate to where you have downloaded and extracted the RSTbx and find the <em>rate_stabilizing_toolbox.pyt</em>.</p></li>
 <li><p>Open up the <strong>Catalog Pane</strong>.</p></li>
 <li><p>Right click on <strong>Databases</strong>, select <strong>Add Database</strong>, and navigate to where you have downloaded and extracted the RSTbx and find <em>data.gdb</em>.</p></li>
-<li><p>Within the <em>data.gdb</em>, right click on <em>MI_carto</em>, <em>MI_mort_indiv</em>, and <em>MI_pop</em>, and <strong>Add to Current Map</strong>.</p></li>
-<li><p>Open the <strong>Individual Data Processor</strong></p></li>
-<li><p>Set the following parameters and <strong>Run</strong>:</p>
-<p><strong>Age Stratified</strong>: <em>Unchecked</em> (We only need total and event population numbers)<br>
-<strong>Input Individual Data</strong>: <em>mi_event_indiv</em><br>
-<strong>Input Individual Data Fields</strong>:</p>
-<ul>
-<li><strong>Region ID</strong>: <em>GEOID</em><br>
-<strong>Input Population Data</strong>: <em>MI_pop</em><br>
-<strong>Input Population Data Fields</strong>:<br>
-</li>
-<li><strong>Region ID</strong>: <em>GEOID</em><br>
-</li>
-<li><strong>Population Count</strong>: <em>PopulationCount</em><br>
-<strong>Input Feature</strong>: <em>MI_carto</em><br>
-<strong>Input Feature Fields</strong>:<br>
-</li>
-<li><strong>Region ID</strong>: <em>GEOID</em><br>
-<strong>Output Table</strong>: <em>mi_agg_joined</em></li>
-</ul></li>
+<li><p>Within the <em>data.gdb</em>, right click on <em>mi_carto</em>, <em>mi_event_agg</em>, and <em>mi_pop</em>, and <strong>Add to Current Map</strong>.</p></li>
+<li><p>Click on <strong>Analysis</strong> within the main ribbon, click on <strong>Tools</strong>, and search for <strong>Make Query Table</strong>.<br>
+<img src=".png" class="img-fluid" width="300"></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Make Query Table</strong> is a powerful tool that can be used for many functions. In this case, we are preforming a simple one-to-one join. You could also perform this using the <strong>Add Join</strong> tool. We will use <strong>Make Query Table</strong> here to get you familiar with it before we preform a slightly more complex join for age-stratified tables.</p>
+</div>
+</div></li>
+<li><p>Set the population table (<em>mi_pop</em>) and the aggregate event table (<em>mi_event_agg</em>) as the <strong>Input Tables</strong>. Since we would like to join these two tables based on their region ID (aka <em>GEOID</em>), we must create an expression that checks if the region ID of a row in one table is equal to the other.</p></li>
+<li><p>We would like our final table to only have three fields: <em>GEOID</em>, <em>PopulationCount</em>, and <em>EventCount</em>. From the <em>Fields</em> dropdown select <em>mi_pop.GEOID</em>, <em>mi_pop.PopulationCount</em>, and <em>mi_event_agg.EventCount</em>.</p></li>
+<li><p>Under <strong>Expresssion</strong> set <em>Where mi_event_agg.GEOID is equal to</em>. Within the final dropdown you should see a list of GEOIDs and two radio buttons (<strong>Values</strong> and <strong>Fields</strong>). Select <strong>Fields</strong>. Open up the final dropdown again, and notice that the options have changed. Select <em>mi_pop.GEOID</em>. Your final expression should read <em>Where mi_event_agg.GEOID is equal to mi_pop.GEOID</em>.</p></li>
+<li><p>Set the <strong>Table Name</strong> as <em>mi_agg_joined</em> and <strong>Run</strong>.</p></li>
 </ol>
 </section>
 <section id="producing-age-adjusted-rates" class="level3">
 <h3 class="anchored" data-anchor-id="producing-age-adjusted-rates">Producing age-adjusted rates</h3>
-<p>In order to create our age-adjusted rates, we will need a stratified aggregate event and population table. Let’s create one using the age stratified population table in <strong>data.gdb</strong> (<strong>mi_pop_grouped</strong>) and the simulated individual-level event data in <strong>data.gdb</strong> (<strong>mi_mort_indiv</strong>).</p>
+<p>In order to create our age-adjusted rates, we will need an age stratified aggregate event and population table. Let’s create one using the age stratified population table in <strong>data.gdb</strong> (<strong>mi_pop_strat</strong>) and the aggregate age stratified event data in <strong>data.gdb</strong> (<strong>mi_event_agg_strat</strong>).</p>
 <ol type="1">
-<li><p>Returning back to the <strong>Individual Data Processor</strong>, set the following parameters and <strong>Run</strong>:</p>
-<p><strong>Age Stratified</strong>: <em>Checked</em><br>
-<strong>Input Individual Data</strong>: <em>mi_event_indiv</em><br>
-<strong>Input Individual Data Fields</strong>:</p>
-<ul>
-<li><strong>Region ID</strong>: <em>GEOID</em><br>
-</li>
-<li><strong>Age</strong>: <em>Age</em></li>
-</ul>
-<p><strong>Input Population Data</strong>: <em>MI_pop_strat</em><br>
-<strong>Input Population Data Fields</strong>:</p>
-<ul>
-<li><strong>Region ID</strong>: <em>GEOID</em><br>
-</li>
-<li><strong>Population Count</strong>: <em>PopulationCount</em><br>
-</li>
-<li><strong>Age Group</strong>: <em>AgeGroup</em></li>
-</ul>
-<p><strong>Input Feature</strong>: <em>mi_carto</em><br>
-<strong>Input Feature Fields</strong>:</p>
-<ul>
-<li><strong>Region ID</strong>: <em>GEOID</em></li>
-</ul>
-<p><strong>Output Table</strong>: <em>mi_agg_joined_strat</em></p></li>
+<li><p>Return back to the <strong>Make Query Table</strong> tool. (<strong>Analysis</strong> -&gt; <strong>Tools</strong> -&gt; search for <strong>Make Query Table</strong>).</p></li>
+<li><p>Set the population table (<em>mi_pop_strat</em>) and the aggregate event table (<em>mi_event_agg_strat</em>) as the <strong>Input Tables</strong>.</p></li>
+<li><p>We would like our final table to only have four fields: <em>GEOID</em>, <em>AgeGroup</em>, <em>PopulationCount</em>, and <em>EventCount</em>. From the <em>Fields</em> dropdown select <em>mi_pop.GEOID</em>, <em>mi_pop.AgeGroup</em>, <em>mi_pop.PopulationCount</em>, and <em>mi_event_agg.EventCount</em>.</p>
+<p>Since we would like to join these two tables based on their region ID (aka <em>GEOID</em>) AND their age group, we must create an expression that checks if BOTH the region ID and age group of a row in one table is equal to the other.</p>
+<p>Under <strong>Expresssion</strong> set <em>Where mi_pop_strat.GEOID is equal to</em>. Within the final dropdown you should see a list of GEOIDs and two radio buttons (<strong>Values</strong> and <strong>Fields</strong>). Select <strong>Fields</strong>. Open up the final dropdown again, and notice that the options have changed. Select <em>mi_event_agg_strat.GEOID</em>.</p>
+<p>Click on <strong>Add Clause</strong>. Set the second sub-expression to be <em>mi_pop_strat.AgeGroup is equal to</em>. Again, within the last dropdown select the radio button for <strong>Fields</strong>, open the dropdown, and select <em>mi_event_agg_strat.AgeGroup</em>.</p>
+<p>Your final expression should be <em>Where mi_pop_strat.GEOID is equal to mi_event_agg_strat.GEOID AND mi_pop_strat.AgeGroup is equal to mi_event_agg_strat.AgeGroup</em>.</p></li>
+<li><p>Set the <strong>Table Name</strong> as <em>mi_agg_joined_strat</em> and <strong>Run</strong>.</p></li>
 </ol>
-<p>We have seen how the <strong>Individual Data Processor</strong> can be used to prepare population data, but now we have to actually produce rates. If you are interested in using individual, record level event data, consider moving on to <a href="../tutorial/stab_rates.html">3. Producing Stabilized Rates</a>. If you are interested in using aggregate event data, consider also taking a look at <a href="../tutorial/agg_event_data.html">2b. Preparing Aggregate Event Data</a>.</p>
+<p>We have seen how the <strong>Make Query Table</strong> can be used to prepare aggregate event data, but now we have to actually produce rates. If you are would like to continue on using aggregate event data, consider moving on to <a href="stab_rates.qmd">3. Producing Stabilized Rates</a>. If you are interested in using individual, record-level event data, consider also taking a look at <a href="indiv_event_data.qmd">2b. Preparing Individual-Level Event Data</a>.</p>
 
 
 </section>
