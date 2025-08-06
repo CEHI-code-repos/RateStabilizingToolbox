@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import arcpy
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-import model
-import census
 import arcpy_extras
+import census
+import model
+
 
 class Toolbox:
     def __init__(self):
@@ -108,37 +109,25 @@ class RST:
         param_age_std_groups.filters[1].type = "ValueList"
         param_age_std_groups.filters[1].list = ["14", "24", "34", "44", "54", "64", "74", "84", "up"]
         
-        param_ci = arcpy.Parameter(
-            displayName="Credible Interval",
-            name="CredibleInterval",
+        params_add = arcpy.Parameter(
+            displayName="Additional Options",
+            name="AdditionalOptions",
             datatype="GPValueTable",
             parameterType="Required",
             direction="Input"
         )
-        param_ci.columns = [['Double', 'Credible Level']]
-        param_ci.values = [[0.95]]
-        param_ci.filters[0].type = "ValueList"
-        param_ci.filters[0].list = [0.9, 0.95, 0.99]
-        param_ci.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
-
-        param_rates_per = arcpy.Parameter(
-            displayName="Rate",
-            name="Rate",
-            datatype="GPValueTable",
-            parameterType="Required",
-            direction="Input"
-        )
-        param_rates_per.columns = [['Long', 'Per']]
-        param_rates_per.values = [[100000]]
-        param_rates_per.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
+        params_add.columns = [['Double', 'Credible Level'], ['Long', 'Output Rate Per'], ['Long', "Number of Years"]]
+        params_add.values = [[0.95], [100000], [1]]
+        params_add.filters[0].type = "ValueList"
+        params_add.filters[0].list = [0.9, 0.95, 0.99]
+        params_add.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         params = [
             param_data_table,
             param_data_fields,
             param_feature,
             param_feature_field,
-            param_ci,
-            param_rates_per,
+            params_add,
             param_out_table,
             param_age_grp_field,
             param_std_pop_yr,
@@ -159,12 +148,11 @@ class RST:
         data_fields = parameters[1]
         feature_url = parameters[2]
         feature_fields = parameters[3]
-        ci_pct = parameters[4]
-        rates_per = parameters[5]
-        estimates_out = parameters[6]
-        data_ageGrp_id = parameters[7]
-        std_pop_yr = parameters[8]
-        age_std_groups = parameters[9]
+        additional_opt = parameters[4]
+        estimates_out = parameters[5]
+        data_ageGrp_id = parameters[6]
+        std_pop_yr = parameters[7]
+        age_std_groups = parameters[8]
 
         # Restrict age groups to only those present within data
         data_ageGrp_info  = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_ageGrp_id.valueAsText)
@@ -189,12 +177,11 @@ class RST:
         data_fields = parameters[1]
         feature_url = parameters[2]
         feature_fields = parameters[3]
-        ci_pct = parameters[4]
-        rates_per = parameters[5]
-        estimates_out = parameters[6]
-        data_ageGrp_id = parameters[7]
-        std_pop_yr = parameters[8]
-        age_std_groups = parameters[9]
+        additional_opt = parameters[4]
+        estimates_out = parameters[5]
+        data_ageGrp_id = parameters[6]
+        std_pop_yr = parameters[7]
+        age_std_groups = parameters[8]
 
         data_fields_name = arcpy_extras.get_valueTableValues(data_fields)[0]
         data_region_info = arcpy_extras.get_fieldInfo(data_url.valueAsText, data_fields_name[0])
@@ -325,12 +312,11 @@ class RST:
         data_fields = parameters[1]
         feature_url = parameters[2]
         feature_fields = parameters[3]
-        ci_pct = parameters[4]
-        rates_per = parameters[5]
-        estimates_out = parameters[6]
-        data_ageGrp_id = parameters[7]
-        std_pop_yr = parameters[8]
-        age_std_groups = parameters[9]
+        additional_opt = parameters[4]
+        estimates_out = parameters[5]
+        data_ageGrp_id = parameters[6]
+        std_pop_yr = parameters[7]
+        age_std_groups = parameters[8]
         
         data_fields_name = arcpy_extras.get_valueTableValues(data_fields)[0]
         if data_ageGrp_id.valueAsText is not None:
@@ -340,8 +326,10 @@ class RST:
         data_pop_name = data_fields_name[2]
         feature_region_name = str(feature_fields.values[0][0])
 
-        rates_per = int(rates_per.valueAsText)
-        ci_pct = float(ci_pct.valueAsText)
+        ci_pct, rates_per, n_years = additional_opt.values
+        ci_pct = float(ci_pct[1])
+        rates_per = int(rates_per[1])
+        n_years = int(n_years[1])
 
         # Get the age group distribution
         age_std_groups_arr = []
@@ -418,7 +406,7 @@ class RST:
         # Generate estimates
         messages.AddMessage("Generating estimates...")
         theta_out = model.runner.gibbs_rucar(Y, n, adj, std_pop)
-        output = model.param_updates.expit(theta_out) * rates_per
+        output = model.param_updates.expit(theta_out) * rates_per / n_years
 
         # If age standardized, generate age_groups
         if age_std_groups.values is not None:
