@@ -116,8 +116,8 @@ class RST:
             parameterType="Required",
             direction="Input"
         )
-        params_add.columns = [['Double', 'Credible Level']]
-        params_add.values = [[0.95]]
+        params_add.columns = [['Double', 'Credible Level'], ['Long', 'Rate']]
+        params_add.values = [[0.95], [100000]]
         params_add.filters[0].type = "ValueList"
         params_add.filters[0].list = [0.9, 0.95, 0.99]
         params_add.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
