@@ -22,6 +22,8 @@ We provide example data to help you work through examples within throughout the 
 | **mi_event_agg_strat** | Age-stratified aggregate event table of 1979 Michigan county myocardial infarcation (ICD-9 code 410.0) death counts. |
 | **mi_pop** | Total population table of Michigan counties in 1979 |
 | **mi_pop_strat** | Age-stratified population table of Michigan counties in 1979 |
+| **mi_joined_event_pop** | Total event and population table of Michigan counties (made by joining **mi_event_agg** and **mi_pop**) |
+| **mi_joined_event_pop_strat** | Age-stratified event and population table of Michigan counties (made by joining **mi_event_agg_strat** and **mi_pop_strat**) |
 
 : {tbl-colwidths="[25,75]"}
 

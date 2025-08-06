@@ -10,7 +10,7 @@ Luckly, the [Individual Data Processor](../reference/IDP.qmd) can do both of tho
 
 ## Requirements
 
-### Event Tables
+### Event Table
 
 Individual-level event tables should be formated to have one record (aka row) for each
 event that occured. If crude-rates are needed, only one column is truly necessary within
@@ -41,7 +41,15 @@ Like this:
 
 (Also see **mi_mort_indiv**)
 
-## Individual Data Processor
+### Population Table
+
+See [1. Acquiring Population Data - Population Tables](1_pop_data.qmd#population-tables)
+
+### Boundary File
+
+See [1. Acquiring Population Data - Boundary File](1_pop_data.qmd#boundary-file)
+
+## Steps
 
 ### Producing crude rates
 
@@ -49,26 +57,18 @@ In order to create our crude rates, we will need an un-stratified aggregate even
 table. Let's create one using the non-age stratified population table in **data.gdb** (**mi_pop**)
 and the simulated individual-level event data in **data.gdb** (**mi_mort_indiv**).
 
-If you haven't already, download and extract the latest release of the [RSTbx](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest).
+If you haven't already, [set up](../index.qmd#set-up) the Rate Stabilizing Toolbox.
 
-1.  Open up ArcGIS Pro and create a new Map Project.  
+1.  Open up the **Catalog Pane**.
 
-2.  Open up the **Catalog Pane**.  
-
-3.  Within the **Catalog Pane**, right click on **Toolboxes** and select **Add Toolbox**.  
-    
-4.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
-
-5.  Open up the **Catalog Pane**.
-
-6.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
+2.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
     the RSTbx and find *data.gdb*.
 
-7.  Within the *data.gdb*, right click on *MI_carto*, *MI_mort_indiv*, and *MI_pop*, and **Add to Current Map**.
+3.  Within the *data.gdb*, right click on *MI_carto*, *MI_mort_indiv*, and *MI_pop*, and **Add to Current Map**.
 
-5.  Open the **Individual Data Processor**  
+4.  Open the **Individual Data Processor**  
 
-6.  Set the following parameters and **Run**:
+5.  Set the following parameters and **Run**:
     
     **Age Stratified**: *Unchecked* (We only need total and event population numbers)  
     **Input Individual Data**: *mi_event_indiv*  

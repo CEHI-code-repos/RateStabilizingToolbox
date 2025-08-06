@@ -16,6 +16,9 @@ website:
           - href: tutorial/3_stab_rates.qmd
       - file: reference/index.qmd
         text: Reference
+    right:
+      - icon: github
+        href: https://github.com/CEHI-code-repos/RateStabilizingToolbox
 
 format:
   html:

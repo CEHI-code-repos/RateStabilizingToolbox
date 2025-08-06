@@ -46,31 +46,28 @@ The following are valid age groups: "0-4", "5-14", "15-24", "25-34", "35-44", "4
 exactly how they are listed here (i.e., "85 and up" would not be a valid age group).
 :::
 
+### Population Table
+
+See [1. Acquiring Population Data - Population Tables](1_pop_data.qmd#population-tables)
+
+## Usage
+
 ### Producing crude rates
 
 In order to create our crude rates, we will need a total aggregate event and population 
 table. Let's create one using the total population table in **data.gdb** (**mi_pop**)
 and the aggregate total event data in **data.gdb** (**mi_event_agg**).
 
-If you haven't already, download and extract the latest release of the [RSTbx](https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest).
+If you haven't already, [set up](../index.qmd#set-up) the Rate Stabilizing Toolbox.
 
-1.  Open up ArcGIS Pro and create a new Map Project.  
+1.  Open up the **Catalog Pane**.
 
-2.  Open up the **Catalog Pane**.  
-
-3.  Within the **Catalog Pane**, right click on **Toolboxes** and select **Add Toolbox**.  
-    
-4.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
-
-5.  Open up the **Catalog Pane**.
-
-6.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
+2.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
     the RSTbx and find *data.gdb*.
 
-7.  Within the *data.gdb*, right click on *mi_carto*, *mi_event_agg*, and *mi_pop*, and **Add to Current Map**.
+3.  Within the *data.gdb*, right click on *mi_carto*, *mi_event_agg*, and *mi_pop*, and **Add to Current Map**.
 
-5.  Click on **Analysis** within the main ribbon, click on **Tools**, and search for **Make Query Table**.  
-    ![](){width=300}
+4.  Click on **Analysis** within the main ribbon, click on **Tools**, and search for **Make Query Table**.  
 
     ::: {.callout-note}
     **Make Query Table** is a powerful tool that can be used for many functions. In this case, we are preforming a simple one-to-one
@@ -79,18 +76,18 @@ If you haven't already, download and extract the latest release of the [RSTbx](h
     :::
 
 
-8.  Set the population table (*mi_pop*) and the aggregate event table (*mi_event_agg*) as the **Input Tables**.
+5.  Set the population table (*mi_pop*) and the aggregate event table (*mi_event_agg*) as the **Input Tables**.
     Since we would like to join these two tables based on their region ID (aka *GEOID*), we must create an expression that checks if
     the region ID of a row in one table is equal to the other.
     
-9.  We would like our final table to only have three fields: *GEOID*, *PopulationCount*, and *EventCount*. From the *Fields* dropdown
+6.  We would like our final table to only have three fields: *GEOID*, *PopulationCount*, and *EventCount*. From the *Fields* dropdown
     select *mi_pop.GEOID*, *mi_pop.PopulationCount*, and *mi_event_agg.EventCount*.
 
-10. Under **Expresssion** set *Where mi_event_agg.GEOID is equal to*. Within the final dropdown you should see a list of GEOIDs and
+7. Under **Expresssion** set *Where mi_event_agg.GEOID is equal to*. Within the final dropdown you should see a list of GEOIDs and
     two radio buttons (**Values** and **Fields**). Select **Fields**. Open up the final dropdown again, and notice that the options
     have changed. Select *mi_pop.GEOID*. Your final expression should read *Where mi_event_agg.GEOID is equal to mi_pop.GEOID*.
 
-11. Set the **Table Name** as *mi_agg_joined* and **Run**.
+8. Set the **Table Name** as *mi_agg_joined* and **Run**.
 
 ### Producing age-adjusted rates
 

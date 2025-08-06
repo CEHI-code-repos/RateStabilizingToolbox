@@ -6,5 +6,58 @@ The final step of a RSTbx workflow is producing stabilized rates!
 
 ## Requirements
 
-### Aggregate event and population data
+### Aggregate event and population table
 
+Aggregate event and population tables should be formated to have one record (aka row) for each
+region. It would look something like:
+
+|GEOID | EventCount| PopulationCount|
+|:-----|----------:|---------------:|
+|01001 |          0|            3430|
+|01001 |          1|            7749|
+|01001 |          0|            7339|
+|...   |        ...|             ...|
+|72153 |          5|            4527|
+|72153 |          7|            3223|
+|72153 |          9|             571|
+
+
+If you would like to produce age-adjusted rates, aggregate event tables should
+have one record (aka row) for reach region-age group combination. Like this:
+
+|GEOID |AgeGroup | EventCount| PopulationCount|
+|:-----|:--------|----------:|---------------:|
+|01001 |0-4      |          0|            3430|
+|01001 |5-14     |          1|            7749|
+|01001 |15-24    |          0|            7339|
+|...   |...      |        ...|             ...|
+|72153 |65-74    |          5|            4527|
+|72153 |75-84    |          7|            3223|
+|72153 |85up     |          9|             571|
+
+### Boundary File
+
+See [1. Acquiring Population Data - Boundary File](1_pop_data.qmd#boundary-file)
+
+## Usage
+
+### Producing crude rates
+
+If you haven't already, [set up](../index.qmd#set-up) the Rate Stabilizing Toolbox.
+
+1.  Open up the **Catalog Pane**.
+
+2.  Right click on **Databases**, select **Add Database**, and navigate to where you have downloaded and extracted 
+    the RSTbx and find *data.gdb*.
+
+3.  Within the *data.gdb*, right click on *mi_carto* and *mi_joined_event_pop*, and **Add to Current Map**.
+
+4.  Open the **Rate Stabilizing Tool**  
+
+5.  Set the following parameters and **Run**:
+    
+
+### Producing age-adjusted rates
+
+1.  Returning back to the **Rate Stabilizing Tool**, set the following parameters and **Run**:
+    
