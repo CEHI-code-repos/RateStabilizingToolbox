@@ -116,11 +116,9 @@ class RST:
             parameterType="Required",
             direction="Input"
         )
-        params_add.columns = [['Double', 'Credible Level'], ['String', 'Upper age value']]
+        params_add.columns = [['Double', 'Credible Level'], ['Long', 'Rate Per'], ['Long', 'Number of Years']]
         params_add.filters[0].type = "ValueList"
         params_add.filters[0].list = [0.90, 0.95, 0.99]
-        params_add.filters[1].type = "ValueList"
-        params_add.filters[1].list = ["14", "24", "34", "44", "54", "64", "74", "84", "up"]
         params_add.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         params = [
