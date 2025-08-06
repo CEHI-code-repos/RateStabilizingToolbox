@@ -326,7 +326,7 @@ class RST:
         data_pop_name = data_fields_name[2]
         feature_region_name = str(feature_fields.values[0][0])
 
-        ci_pct, rates_per, n_years = additional_opt.values
+        ci_pct, rates_per, n_years = additional_opt.values[0]
         ci_pct = float(ci_pct[1])
         rates_per = int(rates_per[1])
         n_years = int(n_years[1])
