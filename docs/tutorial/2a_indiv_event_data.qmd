@@ -49,7 +49,7 @@ See [1. Acquiring Population Data - Population Tables](1_pop_data.qmd#population
 
 See [1. Acquiring Population Data - Boundary File](1_pop_data.qmd#boundary-file)
 
-## Steps
+## Usage
 
 ### Producing crude rates
 
