@@ -117,7 +117,7 @@ class RST:
             direction="Input"
         )
         params_add.columns = [['Double', 'Credible Level'], ['Long', 'Rate Per'], ['Long', 'Number of Years']]
-        params_add.values[0] = [0.95]
+        params_add.values = [[0.95, 100_000, 1]]
         params_add.filters[0].type = "ValueList"
         params_add.filters[0].list = [0.90, 0.95, 0.99]
         params_add.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
