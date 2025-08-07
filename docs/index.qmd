@@ -7,7 +7,7 @@ toc: false
 Generate reliable, local-level age-standardized measures of chronic disease within ArcGIS Pro.
 
 Want to explore additional Conditional Autoregressive (CAR) models? Check
-out the [RSTr package](https://github.com/CEHI-code-repos/RSTr).
+out the [RSTr package](https://cehi-code-repos.github.io/RSTr/).
 
 ## Set up
 

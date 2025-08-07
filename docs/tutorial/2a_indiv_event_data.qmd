@@ -70,18 +70,21 @@ If you haven't already, [set up](../index.qmd#set-up) the Rate Stabilizing Toolb
 
 5.  Set the following parameters and **Run**:
     
-    **Age Stratified**: *Unchecked* (We only need total and event population numbers)  
+    **Age Stratified**: *Unchecked*  
     **Input Individual Data**: *mi_event_indiv*  
     **Input Individual Data Fields**:  
     -   **Region ID**: *GEOID*  
+
     **Input Population Data**: *MI_pop*  
     **Input Population Data Fields**:  
     -   **Region ID**: *GEOID*  
     -   **Population Count**: *PopulationCount*  
-    **Input Feature**: *MI_carto*  
+
+    **Input Feature**: *mi_carto*  
     **Input Feature Fields**:  
     -   **Region ID**: *GEOID*  
-    **Output Table**: *mi_agg_joined*
+
+    **Output Table**: *mi_joined_event_pop*
 
 ### Producing age-adjusted rates
 
@@ -107,6 +110,6 @@ and the simulated individual-level event data in **data.gdb** (**mi_mort_indiv**
     **Input Feature Fields**:  
     -   **Region ID**: *GEOID*  
 
-    **Output Table**: *mi_agg_joined_strat*
+    **Output Table**: *mi_joined_event_pop_strat*
 
-We have seen how the **Individual Data Processor** can be used to prepare population data, but now we have to actually produce rates. If you are interested in using individual, record level event data, consider moving on to [3. Producing Stabilized Rates](3_stab_rates.qmd). If you are interested in using aggregate event data, consider also taking a look at [2b. Preparing Aggregate Event Data](2a_agg_event_data.qmd).
+We have seen how the **Individual Data Processor** can be used to prepare population data, but now we have to actually produce rates. If you are interested in using individual, record level event data, consider moving on to [3. Producing Stabilized Rates](3_stab_rates.qmd). If you are interested in using aggregate event data, consider also taking a look at [2b. Preparing Aggregate Event Data](2b_agg_event_data.qmd).
