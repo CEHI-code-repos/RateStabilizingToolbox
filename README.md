@@ -17,7 +17,7 @@
 5.  Navigate to where you have downloaded and extracted the RSTbx and find the *rate_stabilizing_toolbox.pyt*.  
 
 Want to explore additional Conditional Autoregressive (CAR) models? Check
-out the [RSTr package](https://github.com/CEHI-code-repos/RSTr).
+out the [RSTr package](https://cehi-code-repos.github.io/RSTr/).
 
 ## Documentation
 

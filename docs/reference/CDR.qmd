@@ -2,8 +2,6 @@
 
 {{< var description.cdr >}}
 
-![](../photos/cdr/empty.png){width=300}
-
 ## Parameters {.doc-section .doc-section-parameters}
 
 

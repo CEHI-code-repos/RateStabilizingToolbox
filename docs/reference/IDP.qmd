@@ -2,8 +2,6 @@
 
 {{< var description.idp >}}
 
-![](../photos/IDP.png){width=300}
-
 ## Parameters {.doc-section .doc-section-parameters}
 
 <code>[**Age Stratified**]{.parameter-name} [:]{.parameter-annotation-sep} [checkbox]{.parameter-annotation}</code>
@@ -71,14 +69,14 @@ this data (**MI_mort_indiv** within **data.gdb**) and combine it with population
 [Census Data Retriever](CDR.qmd) (**MI_pop** within **data.gdb**).
 
 -   Age Stratified: Unchecked
--   Input Individual Data: data.gdb/MI_mort_indiv
+-   Input Individual Data: data.gdb/mi_event_indiv
 -   Input Individual Data Fields:
     -   Region ID: GEOID
--   Input Population Data: data.gdb/MI_pop
+-   Input Population Data: data.gdb/mi_pop
 -   Input Population Data Fields:
     -   Region ID: GEOID
     -   Population Count: PopulationCount
--   Input Feature: data.gdb/MI_carto
+-   Input Feature: data.gdb/mi_carto
 -   Input Feature Fields:
     -   Region ID: GEOID
 -   Output Table: some_project.gdb/MI_mort_pop
@@ -88,16 +86,16 @@ this data (**MI_mort_indiv** within **data.gdb**) and combine it with population
 [Census Data Retriever](CDR.qmd) (**MI_pop_grouped** within **data.gdb**).
 
 -   Age Stratified: Checked
--   Input Individual Data: data.gdb/MI_mort_indiv
+-   Input Individual Data: data.gdb/mi_event_indiv
 -   Input Individual Data Fields:
     -   Region ID: GEOID
     -   Age: Age
--   Input Population Data: data.gdb/MI_pop_grouped
+-   Input Population Data: data.gdb/mi_pop_strat
 -   Input Population Data Fields:
     -   Region ID: GEOID
     -   Population Count: PopulationCount
     -   Age Group: AgeGroup
--   Input Feature: data.gdb/MI_carto
+-   Input Feature: data.gdb/mi_carto
 -   Input Feature Fields:
     -   Region ID: GEOID
 -   Output Table: some_project.gdb/MI_mort_pop

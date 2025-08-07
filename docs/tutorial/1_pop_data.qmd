@@ -93,7 +93,7 @@ if you are looking to calculating group-specific rates.
 All the requirements above for your boundary file and population table will still hold
 even if you choose to use custom boundaries or population tables.
 
-## Census Data Retriever (CDR)
+## Usage
 
 :::{.callout-note}
 All succeeding tutorials will rely on custom data provided within the **data.gdb**, but this
