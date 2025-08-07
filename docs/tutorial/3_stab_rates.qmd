@@ -129,3 +129,17 @@ If you haven't already, [set up](../index.qmd#set-up) the Rate Stabilizing Toolb
     **Standardized Age Groups**:  
     -   **Lower age group**: 35, 64, 34  
     -   **Upper age group**: 64, up, up  
+
+## Interpreting estimates
+
+When producing crude rates four columns will be output:
+
+**median** - The estimated rate.
+**CI{credible level}lower** - The lower bound of the estimate at the selected credible level.  
+**CI{credible level}upper** - The upper bound of the estimate at the selected credible level.  
+**relLvl** - The maximum credible level at which a reliable estimate can be produced.
+
+We typically recommend only utilizing estimates with a reliability level above 0.95.
+
+When producing age-adjusted rate, these same columns will be present for each constituent age
+group within your data AND the standardized age groups you selected.

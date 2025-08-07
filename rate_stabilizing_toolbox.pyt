@@ -414,18 +414,19 @@ class RST:
 
         # If age standardized, combine output with prefixes, else just rename the output cols
         output = output_cols = []
+        ci_lvl = int(100 * ci_pct)
         if age_std_groups.values is not None:
             medians = medians.add_prefix("median_")
-            ci_lo = ci_lo.add_prefix(f"CI{int(100 * ci_pct)}lower_")
-            ci_hi = ci_hi.add_prefix(f"CI{int(100 * ci_pct)}upper_")
-            ci_chart = ci_chart.add_prefix("maxCI_")
+            ci_lo = ci_lo.add_prefix(f"CI{ci_lvl}lower_")
+            ci_hi = ci_hi.add_prefix(f"CI{ci_lvl}upper_")
+            ci_chart = ci_chart.add_prefix("relLvl_")
             output = pd.concat([medians, ci_lo, ci_hi, ci_chart], axis = 1)
             for i, med in enumerate(medians.columns):
                 output_cols.extend([ medians.columns[i], ci_lo.columns[i], ci_hi.columns[i], ci_chart.columns[i] ])
             output = output[output_cols].reset_index()
         else:
             output = pd.concat([medians, ci_lo, ci_hi, ci_chart], axis = 1).reset_index()
-            output_cols = ["median", f"CI{int(100 * ci_pct)}lower", f"CI{int(100 * ci_pct)}upper", "maxCI"]
+            output_cols = ["median", f"CI{ci_lvl}lower", f"CI{ci_lvl}upper", "relLvl"]
         output.columns = [data_region_name] + output_cols
 
         arcpy_extras.pandas_to_table(output, estimates_out.valueAsText)

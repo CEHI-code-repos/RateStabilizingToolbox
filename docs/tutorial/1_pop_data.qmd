@@ -84,7 +84,7 @@ filter down my event data to just female deaths and use a custom population tabl
 female population.
 
 :::{.callout-note}
-The [RSTr package](https://github.com/CEHI-code-repos/RSTr) has additional models which are 
+The [RSTr package](https://cehi-code-repos.github.com/RSTr/) has additional models which are 
 more well suited to calculating group-specific rates. We encourage you to check the RSTr out 
 if you are looking to calculating group-specific rates.
 :::
