@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.7.33">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -36,7 +36,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-a986a95301e671fce2c6472dffc862a1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -120,6 +120,13 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Reference</span></a>
   </li>  
 </ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CEHI-code-repos/RateStabilizingToolbox"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
@@ -152,7 +159,6 @@ ul.task-list li input[type="checkbox"] {
 <section id="rate-stabilizing-tool" class="level1">
 <h1>Rate Stabilizing Tool</h1>
 <p>The RST offers an easy-to-use interface for the restricted univariate conditional autoregressive (UCAR) model. With the RST, you can generate small area estimates, credible intervals for those estimates, and the maximum credible levels at which these estimates would be considered reliable.</p>
-<p><img src="../photos/RST.png" class="img-fluid" width="300"></p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <dl>
@@ -162,8 +168,8 @@ ul.task-list li input[type="checkbox"] {
 <p>Table can easily be generated using the <a href="../reference/IDP.html">Individual Data Processor</a>.</p>
 </dd>
 </dl>
-<section id="input-table-fields" class="level4">
-<h4 class="anchored" data-anchor-id="input-table-fields">Input Table Fields</h4>
+<section id="input-table-fields" class="level5">
+<h5 class="anchored" data-anchor-id="input-table-fields">Input Table Fields</h5>
 <blockquote class="blockquote">
 <dl>
 <dt><code><span class="parameter-name"><strong>Region ID</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">field name</span></code></dt>
@@ -187,8 +193,8 @@ ul.task-list li input[type="checkbox"] {
 </dd>
 </dl>
 </section>
-<section id="input-feature-fields" class="level4">
-<h4 class="anchored" data-anchor-id="input-feature-fields">Input Feature Fields</h4>
+<section id="input-feature-fields" class="level5">
+<h5 class="anchored" data-anchor-id="input-feature-fields">Input Feature Fields</h5>
 <blockquote class="blockquote">
 <dl>
 <dt><code><span class="parameter-name"><strong>Region ID</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">field name</span></code></dt>
@@ -197,19 +203,35 @@ ul.task-list li input[type="checkbox"] {
 </dd>
 </dl>
 </blockquote>
+</section>
+<section id="additional-options" class="level5">
+<h5 class="anchored" data-anchor-id="additional-options">Additional Options</h5>
+<blockquote class="blockquote">
 <dl>
 <dt><code><span class="parameter-name"><strong>Credible Level</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">double</span> <span class="parameter-default-sep">=</span> <span class="parameter-default">0.9 | 0.95 | 0.99</span></code></dt>
 <dd>
 <p>Credible level at which credible intervals should be generated for.</p>
 </dd>
-<dt><code><span class="parameter-name"><strong>Per</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">integer</span></code></dt>
+<dt><code><span class="parameter-name"><strong>Rate Per</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">integer</span></code></dt>
 <dd>
 <p>Output rate denominator (i.e.&nbsp;per 100,000).</p>
 </dd>
+<dt><code><span class="parameter-name"><strong>Number of Years</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">integer</span></code></dt>
+<dd>
+<p>Number of years represented by input data (ouput rates will be divided by this number to give annual rates).</p>
+</dd>
+</dl>
+</blockquote>
+<dl>
 <dt><code><span class="parameter-name"><strong>Output Table</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">string</span></code></dt>
 <dd>
 <p>Path of the output table which contains the stabilized rates.</p>
 </dd>
+</dl>
+</section>
+<section id="age-standardization-optional" class="level4">
+<h4 class="anchored" data-anchor-id="age-standardization-optional">Age Standardization (optional)</h4>
+<dl>
 <dt><code><span class="parameter-name"><strong>Age Group Field</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">string</span></code></dt>
 <dd>
 <p>Name of column within the <code><span class="parameter-name"><strong>Input Table</strong></span></code> which specifies age groups.<br>
@@ -220,9 +242,8 @@ The following are valid age groups: “0-4”, “5-14”, “15-24”, “25-34
 <p>The reference year of the standard population used to compute age-adjusted rates.</p>
 </dd>
 </dl>
-</section>
-<section id="standardized-age-groups" class="level4">
-<h4 class="anchored" data-anchor-id="standardized-age-groups">Standardized Age Groups</h4>
+<section id="standardized-age-groups" class="level5">
+<h5 class="anchored" data-anchor-id="standardized-age-groups">Standardized Age Groups</h5>
 <blockquote class="blockquote">
 <dl>
 <dt><code><span class="parameter-name"><strong>Lower age group</strong></span> <span class="parameter-annotation-sep">:</span> <span class="parameter-annotation">array of strings</span></code></dt>
@@ -237,24 +258,29 @@ The following are valid age groups: “0-4”, “5-14”, “15-24”, “25-34
 </blockquote>
 </section>
 </section>
+</section>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<p><strong>Scenario 1:</strong> I want to generate crude rates per 100,000 with credible intervals at the 0.95 credible level for some Michigan event data I have. I already took that data and ran it through the <a href="../reference/IDP.html">Individual Data Processor</a>. You can find it as <strong>MI_mort_pop</strong> within <strong>data.gdb</strong>.</p>
+<p><strong>Scenario 1:</strong> I want to generate crude rates per 100,000 with credible intervals at the 0.95 credible level for one year of Michigan event data. I already took that data and ran it through the <a href="../reference/IDP.html">Individual Data Processor</a>. You can find it as <strong>MI_mort_pop</strong> within <strong>data.gdb</strong>.</p>
 <ul>
-<li>Input Table: data.gdb/MI_mort_pop</li>
+<li>Input Table: data.gdb/mi_joined_event_pop</li>
 <li>Input Table Fields:
 <ul>
 <li>Region ID: GEOID</li>
-<li>Event Count: MortalityCount</li>
+<li>Event Count: EventCount</li>
 <li>Population Count: PopulationCount</li>
 </ul></li>
-<li>Input Feature: data.gdb/MI_carto</li>
+<li>Input Feature: data.gdb/mi_carto</li>
 <li>Input Feature Fields:
 <ul>
 <li>Region ID: GEOID</li>
 </ul></li>
+<li>Additional Options:
+<ul>
 <li>Credible Level: 0.95</li>
-<li>Per: 100,000</li>
+<li>Rate Per: 100,000</li>
+<li>Number of Years: 1</li>
+</ul></li>
 <li>Output Table: some_project.gdb/crude_rates</li>
 <li>Age Group Field: Leave blank</li>
 <li>Standard Population Year: Leave blank</li>
@@ -264,16 +290,16 @@ The following are valid age groups: “0-4”, “5-14”, “15-24”, “25-34
 <li>Upper age group: Leave blank</li>
 </ul></li>
 </ul>
-<p><strong>Scenario 2:</strong> I want to generate age-adjusted rates for the age ranges of 35 and 64, 64 and up, and 34 and up. I want these rates to be per 100,000 with credible intervals at the 0.95 credible level for some Michigan event data I have. I already took that data and ran it through the <a href="../reference/IDP.html">Individual Data Processor</a>. You can find it as <strong>MI_mort_pop_grouped</strong> within <strong>data.gdb</strong>.</p>
+<p><strong>Scenario 2:</strong> I want to generate age-adjusted rates for the age ranges of 35 and 64, 64 and up, and 34 and up. I want these rates to be per 100,000 with credible intervals at the 0.95 credible level for one year of Michigan event data.</p>
 <ul>
-<li>Input Table: data.gdb/MI_mort_pop_grouped</li>
+<li>Input Table: data.gdb/mi_joined_event_pop_strat</li>
 <li>Input Table Fields:
 <ul>
 <li>Region ID: GEOID</li>
-<li>Event Count: MortalityCount</li>
+<li>Event Count: EventCount</li>
 <li>Population Count: PopulationCount</li>
 </ul></li>
-<li>Input Feature: data.gdb/MI_carto</li>
+<li>Input Feature: data.gdb/mi_carto</li>
 <li>Input Feature Fields:
 <ul>
 <li>Region ID: GEOID</li>

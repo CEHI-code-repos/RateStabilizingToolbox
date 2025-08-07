@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.7.33">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -36,7 +36,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-a986a95301e671fce2c6472dffc862a1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -120,6 +120,13 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Reference</span></a>
   </li>  
 </ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CEHI-code-repos/RateStabilizingToolbox"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
@@ -138,6 +145,10 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements">Requirements</a>
   <ul class="collapse">
   <li><a href="#event-tables" id="toc-event-tables" class="nav-link" data-scroll-target="#event-tables">Event Tables</a></li>
+  <li><a href="#population-table" id="toc-population-table" class="nav-link" data-scroll-target="#population-table">Population Table</a></li>
+  </ul></li>
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a>
+  <ul class="collapse">
   <li><a href="#producing-crude-rates" id="toc-producing-crude-rates" class="nav-link" data-scroll-target="#producing-crude-rates">Producing crude rates</a></li>
   <li><a href="#producing-age-adjusted-rates" id="toc-producing-age-adjusted-rates" class="nav-link" data-scroll-target="#producing-age-adjusted-rates">Producing age-adjusted rates</a></li>
   </ul></li>
@@ -273,20 +284,22 @@ Important
 </div>
 </div>
 </section>
+<section id="population-table" class="level3">
+<h3 class="anchored" data-anchor-id="population-table">Population Table</h3>
+<p>See <a href="../tutorial/1_pop_data.html#population-tables">1. Acquiring Population Data - Population Tables</a></p>
+</section>
+</section>
+<section id="usage" class="level2">
+<h2 class="anchored" data-anchor-id="usage">Usage</h2>
 <section id="producing-crude-rates" class="level3">
 <h3 class="anchored" data-anchor-id="producing-crude-rates">Producing crude rates</h3>
 <p>In order to create our crude rates, we will need a total aggregate event and population table. Let’s create one using the total population table in <strong>data.gdb</strong> (<strong>mi_pop</strong>) and the aggregate total event data in <strong>data.gdb</strong> (<strong>mi_event_agg</strong>).</p>
-<p>If you haven’t already, download and extract the latest release of the <a href="https://github.com/CEHI-code-repos/RateStabilizingToolbox/releases/latest">RSTbx</a>.</p>
+<p>If you haven’t already, <a href="../index.html#set-up">set up</a> the Rate Stabilizing Toolbox.</p>
 <ol type="1">
-<li><p>Open up ArcGIS Pro and create a new Map Project.</p></li>
-<li><p>Open up the <strong>Catalog Pane</strong>.</p></li>
-<li><p>Within the <strong>Catalog Pane</strong>, right click on <strong>Toolboxes</strong> and select <strong>Add Toolbox</strong>.</p></li>
-<li><p>Navigate to where you have downloaded and extracted the RSTbx and find the <em>rate_stabilizing_toolbox.pyt</em>.</p></li>
 <li><p>Open up the <strong>Catalog Pane</strong>.</p></li>
 <li><p>Right click on <strong>Databases</strong>, select <strong>Add Database</strong>, and navigate to where you have downloaded and extracted the RSTbx and find <em>data.gdb</em>.</p></li>
 <li><p>Within the <em>data.gdb</em>, right click on <em>mi_carto</em>, <em>mi_event_agg</em>, and <em>mi_pop</em>, and <strong>Add to Current Map</strong>.</p></li>
-<li><p>Click on <strong>Analysis</strong> within the main ribbon, click on <strong>Tools</strong>, and search for <strong>Make Query Table</strong>.<br>
-<img src=".png" class="img-fluid" width="300"></p>
+<li><p>Click on <strong>Analysis</strong> within the main ribbon, click on <strong>Tools</strong>, and search for <strong>Make Query Table</strong>.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">

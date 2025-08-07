@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.7.33">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -20,7 +20,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -36,7 +56,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-a986a95301e671fce2c6472dffc862a1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -68,6 +88,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -120,6 +169,13 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Reference</span></a>
   </li>  
 </ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CEHI-code-repos/RateStabilizingToolbox"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
@@ -135,10 +191,18 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements">Requirements</a>
+  <li><a href="#model" id="toc-model" class="nav-link active" data-scroll-target="#model">Model</a></li>
+  <li><a href="#requirements" id="toc-requirements" class="nav-link" data-scroll-target="#requirements">Requirements</a>
   <ul class="collapse">
-  <li><a href="#aggregate-event-and-population-data" id="toc-aggregate-event-and-population-data" class="nav-link" data-scroll-target="#aggregate-event-and-population-data">Aggregate event and population data</a></li>
+  <li><a href="#aggregate-event-and-population-table" id="toc-aggregate-event-and-population-table" class="nav-link" data-scroll-target="#aggregate-event-and-population-table">Aggregate event and population table</a></li>
+  <li><a href="#boundary-file" id="toc-boundary-file" class="nav-link" data-scroll-target="#boundary-file">Boundary File</a></li>
   </ul></li>
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a>
+  <ul class="collapse">
+  <li><a href="#producing-crude-rates" id="toc-producing-crude-rates" class="nav-link" data-scroll-target="#producing-crude-rates">Producing crude rates</a></li>
+  <li><a href="#producing-age-adjusted-rates" id="toc-producing-age-adjusted-rates" class="nav-link" data-scroll-target="#producing-age-adjusted-rates">Producing age-adjusted rates</a></li>
+  </ul></li>
+  <li><a href="#interpreting-estimates" id="toc-interpreting-estimates" class="nav-link" data-scroll-target="#interpreting-estimates">Interpreting estimates</a></li>
   </ul>
 </nav>
     </div>
@@ -165,16 +229,242 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>The final step of a RSTbx workflow is producing stabilized rates!</p>
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
+<p>The Univariate Conditional Autoregressive (UCAR) model used by RSTbx is based on the model developed by <span class="citation" data-cites="besag_bayesian_1991">Besag, York, and Mollié (<a href="#ref-besag_bayesian_1991" role="doc-biblioref">1991</a>)</span> with modifications using inverse transform sampling for restricted informativeness based on <span class="citation" data-cites="quick_evaluating_2021">Quick, Song, and Tabb (<a href="#ref-quick_evaluating_2021" role="doc-biblioref">2021</a>)</span>:</p>
+<p><span class="math display">\[
+\begin{split}
+Y_{i} &amp;\sim \text{Binomial}(n_{i}, \theta_{i}) \\
+\theta_{i} &amp;\sim \text{LogitNormal}(\beta_{j} + Z_{i}, \tau^2), \\
+i &amp;=\{1,...,N_s\}, j =\{1,...,N_{is}\}
+\end{split}
+\]</span></p>
+<p><span class="math display">\[
+\begin{split}
+\beta_{j} &amp;\sim \text{Normal}(0,\sigma_{\beta}^2),\ \sigma_{\beta}^2 \to \infty \\
+Z &amp;\sim \text{CAR}(\sigma^2) \\
+\sigma^2 &amp;\sim \text{InvGamma}(a_\sigma,b_\sigma) \\
+\tau^2 &amp;\sim \text{InvGamma}(a_\tau,b_\tau)
+\end{split}
+\]</span></p>
+<p>Additional models are available within the <a href="https://cehi-code-repos.github.io/RSTr/">RSTr package</a>.</p>
+</section>
 <section id="requirements" class="level2">
 <h2 class="anchored" data-anchor-id="requirements">Requirements</h2>
-<section id="aggregate-event-and-population-data" class="level3">
-<h3 class="anchored" data-anchor-id="aggregate-event-and-population-data">Aggregate event and population data</h3>
+<section id="aggregate-event-and-population-table" class="level3">
+<h3 class="anchored" data-anchor-id="aggregate-event-and-population-table">Aggregate event and population table</h3>
+<p>Aggregate event and population tables should be formated to have one record (aka row) for each region. It would look something like:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">GEOID</th>
+<th style="text-align: right;">EventCount</th>
+<th style="text-align: right;">PopulationCount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">01001</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3430</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">01001</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7749</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">01001</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">7339</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">72153</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4527</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">72153</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3223</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">72153</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">571</td>
+</tr>
+</tbody>
+</table>
+<p>If you would like to produce age-adjusted rates, aggregate event tables should have one record (aka row) for reach region-age group combination. Like this:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">GEOID</th>
+<th style="text-align: left;">AgeGroup</th>
+<th style="text-align: right;">EventCount</th>
+<th style="text-align: right;">PopulationCount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">01001</td>
+<td style="text-align: left;">0-4</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3430</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">01001</td>
+<td style="text-align: left;">5-14</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7749</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">01001</td>
+<td style="text-align: left;">15-24</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">7339</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">…</td>
+<td style="text-align: left;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">72153</td>
+<td style="text-align: left;">65-74</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4527</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">72153</td>
+<td style="text-align: left;">75-84</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3223</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">72153</td>
+<td style="text-align: left;">85up</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">571</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="boundary-file" class="level3">
+<h3 class="anchored" data-anchor-id="boundary-file">Boundary File</h3>
+<p>See <a href="../tutorial/1_pop_data.html#boundary-file">1. Acquiring Population Data - Boundary File</a></p>
+</section>
+</section>
+<section id="usage" class="level2">
+<h2 class="anchored" data-anchor-id="usage">Usage</h2>
+<section id="producing-crude-rates" class="level3">
+<h3 class="anchored" data-anchor-id="producing-crude-rates">Producing crude rates</h3>
+<p>If you haven’t already, <a href="../index.html#set-up">set up</a> the Rate Stabilizing Toolbox.</p>
+<ol type="1">
+<li><p>Open up the <strong>Catalog Pane</strong>.</p></li>
+<li><p>Right click on <strong>Databases</strong>, select <strong>Add Database</strong>, and navigate to where you have downloaded and extracted the RSTbx and find <em>data.gdb</em>.</p></li>
+<li><p>Within the <em>data.gdb</em>, right click on <em>mi_carto</em> and <em>mi_joined_event_pop</em>, and <strong>Add to Current Map</strong>.</p></li>
+<li><p>Open the <strong>Rate Stabilizing Tool</strong></p></li>
+<li><p>Set the following parameters and <strong>Run</strong>:</p>
+<p><strong>Input Table</strong>: data.gdb/mi_joined_event_pop<br>
+<strong>Input Table Fields</strong>:</p>
+<ul>
+<li><strong>Region ID</strong>: GEOID<br>
+</li>
+<li><strong>Event Count</strong>: EventCount<br>
+</li>
+<li><strong>Population Count</strong>: PopulationCount</li>
+</ul>
+<p><strong>Input Feature</strong>: data.gdb/mi_carto<br>
+<strong>Input Feature Fields</strong>:</p>
+<ul>
+<li><strong>Region ID</strong>: GEOID</li>
+</ul>
+<p><strong>Additional Options</strong>:</p>
+<ul>
+<li><strong>Credible Level</strong>: 0.95<br>
+</li>
+<li><strong>Rate Per</strong>: 100,000<br>
+</li>
+<li><strong>Number of Years</strong>: 1</li>
+</ul>
+<p><strong>Output Table</strong>: crude_rates<br>
+<strong>Age Group Field</strong>: Leave blank<br>
+<strong>Standard Population Year</strong>: Leave blank<br>
+<strong>Standardized Age Groups</strong>:</p>
+<ul>
+<li><strong>Lower age group</strong>: Leave blank<br>
+</li>
+<li><strong>Upper age group</strong>: Leave blank</li>
+</ul></li>
+</ol>
+</section>
+<section id="producing-age-adjusted-rates" class="level3">
+<h3 class="anchored" data-anchor-id="producing-age-adjusted-rates">Producing age-adjusted rates</h3>
+<ol type="1">
+<li><p>Within the <em>data.gdb</em>, right click on <em>mi_joined_event_pop_strat</em>, and <strong>Add to Current Map</strong>.</p></li>
+<li><p>Returning back to the <strong>Rate Stabilizing Tool</strong>, set the following parameters and <strong>Run</strong>:</p>
+<p><strong>Input Table</strong>: data.gdb/mi_joined_event_pop_strat<br>
+<strong>Input Table Fields</strong>:</p>
+<ul>
+<li><strong>Region ID</strong>: GEOID<br>
+</li>
+<li><strong>Event Count</strong>: EventCount<br>
+</li>
+<li><strong>Population Count</strong>: PopulationCount</li>
+</ul>
+<p><strong>Input Feature</strong>: data.gdb/mi_carto<br>
+<strong>Input Feature Fields</strong>:</p>
+<ul>
+<li><strong>Region ID</strong>: GEOID</li>
+</ul>
+<p><strong>Additional Options</strong>:</p>
+<ul>
+<li><strong>Credible Level</strong>: 0.95<br>
+</li>
+<li><strong>Rate Per</strong>: 100,000<br>
+</li>
+<li><strong>Number of Years</strong>: 1</li>
+</ul>
+<p><strong>Output Table</strong>: age_adj_rate<br>
+<strong>Age Group Field</strong>: AgeGroup<br>
+<strong>Standard Population Year</strong>: 2010<br>
+<strong>Standardized Age Groups</strong>:</p>
+<ul>
+<li><strong>Lower age group</strong>: 35, 64, 34<br>
+</li>
+<li><strong>Upper age group</strong>: 64, up, up</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="interpreting-estimates" class="level2">
+<h2 class="anchored" data-anchor-id="interpreting-estimates">Interpreting estimates</h2>
+<p>When producing crude rates four columns will be output:</p>
+<p><strong>median</strong> - The estimated rate. <strong>CI{credible level}lower</strong> - The lower bound of the estimate at the selected credible level.<br>
+<strong>CI{credible level}upper</strong> - The upper bound of the estimate at the selected credible level.<br>
+<strong>relLvl</strong> - The maximum credible level at which a reliable estimate can be produced.</p>
+<p>We typically recommend only utilizing estimates with a reliability level above 0.95.</p>
+<p>When producing age-adjusted rate, these same columns will be present for each constituent age group within your data AND the standardized age groups you selected.</p>
+
 
 
 </section>
-</section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-besag_bayesian_1991" class="csl-entry" role="listitem">
+Besag, Julian, Jeremy York, and Annie Mollié. 1991. <span>“Bayesian Image Restoration, with Two Applications in Spatial Statistics.”</span> <em>Annals of the Institute of Statistical Mathematics</em> 43 (1): 1–20. <a href="https://doi.org/10.1007/BF00116466">https://doi.org/10.1007/BF00116466</a>.
+</div>
+<div id="ref-quick_evaluating_2021" class="csl-entry" role="listitem">
+Quick, Harrison, Guangzi Song, and Loni Philip Tabb. 2021. <span>“Evaluating the Informativeness of the <span>Besag</span>-<span>York</span>-<span>Mollié</span> <span>CAR</span> Model.”</span> <em>Spatial and Spatio-Temporal Epidemiology</em> 37 (June): 100420. <a href="https://doi.org/10.1016/j.sste.2021.100420">https://doi.org/10.1016/j.sste.2021.100420</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.7.33">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -36,7 +36,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-a986a95301e671fce2c6472dffc862a1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -120,6 +120,13 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Reference</span></a>
   </li>  
 </ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CEHI-code-repos/RateStabilizingToolbox"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
@@ -141,7 +148,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#population-tables" id="toc-population-tables" class="nav-link" data-scroll-target="#population-tables">Population Tables</a></li>
   </ul></li>
   <li><a href="#using-custom-data" id="toc-using-custom-data" class="nav-link" data-scroll-target="#using-custom-data">Using custom data</a></li>
-  <li><a href="#census-data-retriever-cdr" id="toc-census-data-retriever-cdr" class="nav-link" data-scroll-target="#census-data-retriever-cdr">Census Data Retriever (CDR)</a>
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a>
   <ul class="collapse">
   <li><a href="#producing-crude-rates" id="toc-producing-crude-rates" class="nav-link" data-scroll-target="#producing-crude-rates">Producing crude rates</a></li>
   <li><a href="#producing-age-adjusted-rates" id="toc-producing-age-adjusted-rates" class="nav-link" data-scroll-target="#producing-age-adjusted-rates">Producing age-adjusted rates</a></li>
@@ -318,13 +325,13 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The <a href="https://github.com/CEHI-code-repos/RSTr">RSTr package</a> has additional models which are more well suited to calculating group-specific rates. We encourage you to check the RSTr out if you are looking to calculating group-specific rates.</p>
+<p>The <a href="https://cehi-code-repos.github.com/RSTr/">RSTr package</a> has additional models which are more well suited to calculating group-specific rates. We encourage you to check the RSTr out if you are looking to calculating group-specific rates.</p>
 </div>
 </div>
 <p>All the requirements above for your boundary file and population table will still hold even if you choose to use custom boundaries or population tables.</p>
 </section>
-<section id="census-data-retriever-cdr" class="level2">
-<h2 class="anchored" data-anchor-id="census-data-retriever-cdr">Census Data Retriever (CDR)</h2>
+<section id="usage" class="level2">
+<h2 class="anchored" data-anchor-id="usage">Usage</h2>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -367,8 +374,8 @@ Note
 <p>Now that we have downloaded our total population table. We still require a age-stratified population table to calculate age-adjusted rates. Additionally, we still require boundaries. Fortunately, we can take care of both of these in one step.</p>
 <ol type="1">
 <li><p>Returning back to the <strong>Census Data Retriever</strong>, set the following parameters:</p>
-<p><strong>Age-Stratified</strong>: <em>Checked</em> (We want an age-stratified table)</p>
-<p>Keep all the <strong>Request Parameters</strong> the same:</p>
+<p><strong>Age-Stratified</strong>: <em>Checked</em> (We want an age-stratified table)<br>
+Keep all the <strong>Request Parameters</strong> the same:</p>
 <ul>
 <li><strong>Survey</strong>: <em>5-year ACS</em><br>
 </li>
