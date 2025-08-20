@@ -159,7 +159,7 @@ class RST:
         if data_ageGrp_info.exists:
             ageGrp_unique = list(set(data_ageGrp_info.list))
 
-            grp_notValid = [group for group in ageGrp_unique if group not in census.constants.age_grps]
+            grp_notValid = [group for group in ageGrp_unique if group not in census.constants.AGE_GROUPS]
 
             if len(grp_notValid) == 0:
                 lvs = sorted([int(group.split("-")[0]) for group in ageGrp_unique if group != "85up"])
@@ -278,11 +278,11 @@ class RST:
             
         if data_ageGrp_info.exists and not data_ageGrp_id.hasError():
             ageGrp_unique = list(set(data_ageGrp_info.list))
-            ageGrp_invalid = [group for group in ageGrp_unique if group not in census.constants.age_grps]
+            ageGrp_invalid = [group for group in ageGrp_unique if group not in census.constants.AGE_GROUPS]
             # Check if there are any invalid age groups
             if len(ageGrp_invalid) != 0:
                 err = "Age Group Field must not contain an invalid age group. See "
-                err += arcpy_extras.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem not in census.constants.age_grps]) + "."
+                err += arcpy_extras.row_string([i for i, elem in enumerate(data_ageGrp_info.list) if elem not in census.constants.AGE_GROUPS]) + "."
                 data_ageGrp_id.setErrorMessage(err)
             elif data_region_info.exists:
                 ageGrp_dict = {}
@@ -332,9 +332,9 @@ class RST:
         age_std_groups_names = []
         if age_std_groups.values is not None:
             for lv, uv, in age_std_groups.values:
-                lv_index = [i for i, grp in enumerate(census.constants.age_grps) if grp.startswith(lv)][0]
-                uv_index = [i for i, grp in enumerate(census.constants.age_grps) if grp.endswith(uv)][0]
-                age_std_groups_arr.append(census.constants.age_grps[lv_index:(uv_index + 1)])
+                lv_index = [i for i, grp in enumerate(census.constants.AGE_GROUPS) if grp.startswith(lv)][0]
+                uv_index = [i for i, grp in enumerate(census.constants.AGE_GROUPS) if grp.endswith(uv)][0]
+                age_std_groups_arr.append(census.constants.AGE_GROUPS[lv_index:(uv_index + 1)])
                 age_std_groups_names.append( lv + ("to" + uv if uv != "85up" else "up") )
 
         # Read in data
@@ -371,7 +371,7 @@ class RST:
         if (std_pop_yr.valueAsText == "2010"):
             std_pop = np.array([20203362, 41025851, 43626342, 41063948, 41070606, 45006716, 36482729, 21713429, 13061122, 5493433])
         if std_pop_yr.valueAsText is not None:
-            std_pop = std_pop[np.isin(census.constants.age_grps, age_groups)]
+            std_pop = std_pop[np.isin(census.constants.AGE_GROUPS, age_groups)]
 
         # Create adjacency matrix
         arcpy.AddMessage("Creating adjacency matrix ...")
@@ -745,11 +745,11 @@ class IDP:
                     
         if pop_ageGrp_info.exists and not pop_data_fields.hasError():
             ageGrp_unique = list(set(pop_ageGrp_info.list))
-            ageGrp_invalid = [group for group in ageGrp_unique if group not in census.constants.age_grps]
+            ageGrp_invalid = [group for group in ageGrp_unique if group not in census.constants.AGE_GROUPS]
             # Check if there are any invalid age groups
             if len(ageGrp_invalid) != 0:
                 err = "Age Group Field must only contain valid age groups. See "
-                err += arcpy_extras.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem not in census.constants.age_grps]) + "."
+                err += arcpy_extras.row_string([i for i, elem in enumerate(pop_ageGrp_info.list) if elem not in census.constants.AGE_GROUPS]) + "."
                 pop_data_fields.setErrorMessage(err)
             elif pop_region_info.exists:
                 ageGrp_dict = {}
@@ -911,7 +911,7 @@ class CDR:
         param_data_fields.filters[2].type = "ValueList"
         param_data_fields.filters[2].list = ["County", "Tract"]
         param_data_fields.filters[3].type = "ValueList"
-        param_data_fields.filters[3].list = list(census.constants.state_to_fips.keys())
+        param_data_fields.filters[3].list = list(census.constants.STATE_TO_FIPS.keys())
         param_data_fields.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         param_out_table = arcpy.Parameter(

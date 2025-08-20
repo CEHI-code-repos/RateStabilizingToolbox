@@ -4,7 +4,7 @@ from . import constants
 
 def get_census(survey: str, year: str, geography: str, state: str, age_stratified: bool):
     geography = geography.lower()
-    fips = constants.state_to_fips[state]
+    fips = constants.STATE_TO_FIPS[state]
 
     if survey == "5-year ACS":
         survey = "acs"

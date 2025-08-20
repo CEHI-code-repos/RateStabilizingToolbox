@@ -6,7 +6,7 @@ import os
 from zipfile import ZipFile
 
 def get_geometry(geometry: str, geom_type: str, year: str, state: str, output_path: str):
-    state_geoid = constants.state_to_fips[state]
+    state_geoid = constants.STATE_TO_FIPS[state]
     if year in constants.acs_years:
         year = year.split("-")[1]
 
