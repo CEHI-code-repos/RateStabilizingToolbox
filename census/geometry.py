@@ -7,7 +7,7 @@ from zipfile import ZipFile
 
 def get_geometry(geometry: str, geom_type: str, year: str, state: str, output_path: str):
     state_geoid = constants.STATE_TO_FIPS[state]
-    if year in constants.acs_years:
+    if year in constants.ACS_YEARS:
         year = year.split("-")[1]
 
     with tempfile.TemporaryDirectory() as tempdir:

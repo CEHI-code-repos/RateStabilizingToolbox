@@ -907,7 +907,7 @@ class CDR:
         param_data_fields.filters[0].type = "ValueList"
         param_data_fields.filters[0].list = ["5-year ACS", "Decennial"]
         param_data_fields.filters[1].type = "ValueList"
-        param_data_fields.filters[1].list = census.constants.acs_years
+        param_data_fields.filters[1].list = census.constants.ACS_YEARS
         param_data_fields.filters[2].type = "ValueList"
         param_data_fields.filters[2].list = ["County", "Tract"]
         param_data_fields.filters[3].type = "ValueList"
@@ -976,9 +976,9 @@ class CDR:
         if not req_survey:
             pass
         elif req_survey == "5-year ACS":
-            req_param.filters[1].list = census.constants.acs_years
+            req_param.filters[1].list = census.constants.ACS_YEARS
         elif req_survey == "Decennial":
-            req_param.filters[1].list = census.constants.dec_years
+            req_param.filters[1].list = census.constants.DEC_YEARS
 
         # No geometry for 2009
         if req_year == "2005-2009":
@@ -990,7 +990,7 @@ class CDR:
             geom_type.enabled = True
             out_feature.enabled = True
 
-        if req_year in census.constants.acs_years and req_year in ["2007-2011", "2008-2012"]:
+        if req_year in census.constants.ACS_YEARS and req_year in ["2007-2011", "2008-2012"]:
             geom_type.filter.list = ["TIGER"]
         else:
             geom_type.filter.list = ["TIGER", "Cartographic"]

@@ -17,11 +17,11 @@ def get_census(survey: str, year: str, geography: str, state: str, age_stratifie
         elif int(year) != 2020:
             file = "sf1"
 
-    age_vars_dict = getattr(constants, file + "_age_vars")
+    age_vars_dict = getattr(constants, (file + "_age_vars").upper())
     if age_stratified:
         var_cols = [var for var_list in age_vars_dict.values() for var in var_list]
     else:
-        var_cols = [getattr(constants, file + "_tot_var")]
+        var_cols = [getattr(constants, (file + "_tot_var").upper())]
     var_str = ",".join(var_cols)
 
     req_url = f"https://api.census.gov/data/{year}/{survey}/{file}?get={var_str},GEO_ID,NAME&for={geography}:*&in=state:{fips}"
@@ -45,7 +45,7 @@ def get_census(survey: str, year: str, geography: str, state: str, age_stratifie
             var_name = 'age_group', 
             value_name = 'pop_count')
     else:
-        resp_df = resp_df.rename(columns = {getattr(constants, file + "_tot_var"): "pop_count"})
+        resp_df = resp_df.rename(columns = {getattr(constants, (file + "_tot_var").upper()): "pop_count"})
 
     resp_df = resp_df.rename(columns = {"GEO_ID": "geoid", "NAME": "name"})
 
