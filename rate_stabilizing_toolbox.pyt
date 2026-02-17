@@ -246,15 +246,10 @@ class RST:
 
         # Warn if Event Count >= Population Count
         if data_pop_info.exists and data_event_info.exists and not data_fields.hasError():
-            equal100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if nevents == data_pop_info.list[i]]
-            if equal100_rate_rows:
-                warn = "Input Table Event Count is equal to Input Table Population Count at "
-                warn += arcpy_extras.row_string(equal100_rate_rows) + "."
-                data_fields.setWarningMessage(warn)
-            above100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if nevents > data_pop_info.list[i]]
-            if above100_rate_rows:
-                err = "Input Table Event Count is greater than Input Table Population Count at "
-                err += arcpy_extras.row_string(above100_rate_rows) + "."
+            gte100_rate_rows = [i for i, nevents in enumerate(data_event_info.list) if nevents >= data_pop_info.list[i]]
+            if gte100_rate_rows:
+                err = "Input Table Event Count is greater than or equal to Input Table Population Count at "
+                err += arcpy_extras.row_string(gte100_rate_rows) + "."
                 data_fields.setErrorMessage(err)
 
         if (data_region_info.exists and feature_region_info.exists and 
@@ -341,13 +336,6 @@ class RST:
         data = arcpy_extras.get_pandas(data_url.valueAsText, data_fields_name)
         age_groups = [""]
         num_group = 1
-
-        # Warn if Event Count == Population Count
-        equal100_rate_rows = np.where(data[data_event_name] == data[data_pop_name])[0].tolist()
-        if equal100_rate_rows:
-            warn = "Input Table Event Count is equal to Input Table Population Count at "
-            warn += arcpy_extras.row_string(equal100_rate_rows) + "."
-            messages.addWarningMessage(warn)
 
         data = data.sort_values(by = [data_region_name])
         regions = data[data_region_name].unique().tolist()
