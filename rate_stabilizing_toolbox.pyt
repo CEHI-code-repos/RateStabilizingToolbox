@@ -270,6 +270,18 @@ class RST:
                     err = "Input Feature Region ID Field must only contain values present in Input Table Region ID Field. See "
                     err += arcpy_extras.row_string([i for i, elem in enumerate(feature_region_info.list) if elem not in data_region_info.list]) + "."
                     feature_fields.setErrorMessage(err)
+        
+        if (data_ageGrp_info.exists and not data_ageGrp_id.hasError() and 
+            data_event_info.exists and not data_fields.hasError()):
+            totals = {}
+            for age_group, n in zip(data_ageGrp_info.list, data_event_info.list):
+                totals[age_group] = totals.get(age_group, 0) + n
+
+            zeros_even_age_groups = [age_group for age_group, n in totals.items() if n == 0]
+            if zeros_even_age_groups:
+                err = "All Age Groups must have at least one event within them. See "
+                err += ", "", ".join(zeros_even_age_groups)
+                data_ageGrp_id.setErrorMessage(err)
             
         if data_ageGrp_info.exists and not data_ageGrp_id.hasError():
             ageGrp_unique = list(set(data_ageGrp_info.list))
