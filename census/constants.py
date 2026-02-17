@@ -1,3 +1,4 @@
+# fmt: off
 STATE_TO_FIPS = {
     "Alabama": "01",
     "Alaska": "02",
@@ -95,5 +96,5 @@ DP_AGE_VARS = {
     "85up": ["DP1_0019C"]
 }
 
-ACS_YEARS = [str(year - 4) + "-" + str(year) for year in list(range(2023, 2009 - 1, -1))]
+ACS_YEARS = [str(year - 4) + "-" + str(year) for year in list(range(2024, 2009 - 1, -1))]
 DEC_YEARS = ["2000", "2010", "2020"]
