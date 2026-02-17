@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/3_stab_rates.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
-  </url>
-  <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/2a_indiv_event_data.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/CDR.html</loc>
+    <lastmod>2026-02-17T16:30:15.331Z</lastmod>
   </url>
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/IDP.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
+    <lastmod>2026-02-17T16:30:15.331Z</lastmod>
   </url>
   <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/index.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
-  </url>
-  <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/index.html</loc>
-    <lastmod>2026-01-23T14:16:44.813Z</lastmod>
-  </url>
-  <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/RST.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
-  </url>
-  <url>
-    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/CDR.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/2a_indiv_event_data.html</loc>
+    <lastmod>2026-02-17T16:30:15.332Z</lastmod>
   </url>
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/1_pop_data.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
+    <lastmod>2026-02-17T16:30:15.331Z</lastmod>
+  </url>
+  <url>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/index.html</loc>
+    <lastmod>2026-02-17T16:30:15.329Z</lastmod>
+  </url>
+  <url>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/3_stab_rates.html</loc>
+    <lastmod>2026-02-17T16:30:15.332Z</lastmod>
   </url>
   <url>
     <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/tutorial/2b_agg_event_data.html</loc>
-    <lastmod>2026-01-23T14:16:44.816Z</lastmod>
+    <lastmod>2026-02-17T16:30:15.332Z</lastmod>
+  </url>
+  <url>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/index.html</loc>
+    <lastmod>2026-02-17T16:30:15.331Z</lastmod>
+  </url>
+  <url>
+    <loc>https://CEHI-code-repos.github.io/RateStabilizingToolbox/reference/RST.html</loc>
+    <lastmod>2026-02-17T16:30:15.331Z</lastmod>
   </url>
 </urlset>
