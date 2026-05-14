@@ -2,6 +2,7 @@
 import arcpy
 import numpy as np
 import pandas as pd
+import os
 
 import arcpy_extras
 import census
@@ -884,6 +885,21 @@ class CDR:
         self.label = "Census Data Retriever"
         self.description = ""
 
+        toolbox_dir = os.path.dirname(os.path.abspath(__file__))
+        self.api_key_file_path = os.path.join(toolbox_dir, "census_api_key.txt")
+
+    def get_stored_api_key(self):
+        """Reads the key from the plain text file if it exists."""
+        if os.path.exists(self.api_key_file_path):
+            with open(self.api_key_file_path, 'r') as f:
+                return f.read().strip()
+        return None
+
+    def save_api_key(self, api_key):
+        """Writes the key to the plain text file."""
+        with open(self.api_key_file_path, 'w') as f:
+            f.write(api_key.strip())
+
     def getParameterInfo(self):
         """Define the tool parameters."""
 
@@ -932,6 +948,14 @@ class CDR:
         )
         param_geom_type.filter.type = "ValueList"
         param_geom_type.filter.list = ["TIGER", "Cartographic"]
+        
+        param_api_key = arcpy.Parameter(
+            displayName = "API Key",
+            name = "APIKey",
+            datatype = "GPString",
+            parameterType = "Optional",
+            direction = "Input"
+        )
 
         param_out_feature = arcpy.Parameter(
             displayName="Output Feature",
@@ -947,6 +971,7 @@ class CDR:
             param_data_fields,
             param_out_table,
             param_geom_type,
+            param_api_key,
             param_out_feature
         ]
         return params
@@ -963,7 +988,8 @@ class CDR:
         req_param = parameters[1]
         out_table = parameters[2]
         geom_type = parameters[3]
-        out_feature = parameters[4]
+        api_key = parameters[4]
+        out_feature = parameters[5]
 
         req_param_val = arcpy_extras.get_valueTableValues(req_param)[0]
         req_survey = req_param_val[0]
@@ -994,6 +1020,11 @@ class CDR:
             geom_type.filter.list = ["TIGER"]
         else:
             geom_type.filter.list = ["TIGER", "Cartographic"]
+
+        req_api_key = self.get_stored_api_key()
+        if req_api_key:
+            api_key.enabled = False
+            api_key.value = None
         
         return
 
@@ -1004,7 +1035,8 @@ class CDR:
         req_param = parameters[1]
         out_table = parameters[2]
         geom_type = parameters[3]
-        out_feature = parameters[4]
+        api_key = parameters[4]
+        out_feature = parameters[5]
 
         req_param_val = arcpy_extras.get_valueTableValues(req_param)[0]
         req_survey = req_param_val[0]
@@ -1018,6 +1050,10 @@ class CDR:
             arcpy_extras.set_parameterRequired(out_feature)
         if req_out_feature:
             arcpy_extras.set_parameterRequired(geom_type)
+        
+        req_api_key = self.get_stored_api_key()
+        if req_api_key is None:
+            arcpy_extras.set_parameterRequired(api_key)
 
         return
 
@@ -1027,7 +1063,8 @@ class CDR:
         req_param = parameters[1]
         out_table = parameters[2]
         geom_type = parameters[3]
-        out_feature = parameters[4]
+        api_key = parameters[4]
+        out_feature = parameters[5]
 
         req_param_val = arcpy_extras.get_valueTableValues(req_param)[0]
         req_survey = req_param_val[0]
@@ -1035,14 +1072,21 @@ class CDR:
         req_geography = req_param_val[2]
         req_state = req_param_val[3]
         req_geom_type = geom_type.valueAsText
+        req_api_key = api_key.valueAsText
         req_out_feature = out_feature.valueAsText
+
+        if req_api_key:
+            self.save_api_key(req_api_key) 
+        else:
+            req_api_key = self.get_stored_api_key()
         
         resp_df = census.data.get_census(
             req_survey, 
             req_year, 
             req_geography, 
             req_state, 
-            byAge.value
+            byAge.value,
+            req_api_key
         )
         arcpy_extras.pandas_to_table(resp_df, out_table.valueAsText)
 
