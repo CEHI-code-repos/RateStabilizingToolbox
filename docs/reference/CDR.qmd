@@ -35,6 +35,10 @@
 
 :   Type of boundary file to retrieve.
 
+<code>[**API Key**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
+
+:   (Required on first use) Census API Key. Request an API Key from the Census [here](https://api.census.gov/data/key_signup.html). The API Key will be stored within a `census_api_key.txt` file within the same directory as `rate_stabilizing_toolbox.pyt`.
+
 <code>[**Output Feature**]{.parameter-name} [:]{.parameter-annotation-sep} [feature path]{.parameter-annotation}</code>
 
 :   Path of output boundary file.
