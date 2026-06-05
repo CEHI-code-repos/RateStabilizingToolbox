@@ -51,6 +51,10 @@
 >   <code>[**Number of Years**]{.parameter-name} [:]{.parameter-annotation-sep} [integer]{.parameter-annotation}</code>
 > 
 >   :   Number of years represented by input data (ouput rates will be divided by this number to give annual rates).
+>
+>   <code>[**Iteration Length**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
+> 
+>   :   Iteration length for the Gibbs sampler. Increasing the number of iterations ensures better convergence, thus improving the accuracy of the posterior estimates. Medium and high iteration settings can take 10+ minutes on large datasets (1,000+ records).
 
 <code>[**Output Table**]{.parameter-name} [:]{.parameter-annotation-sep} [string]{.parameter-annotation}</code>
 
