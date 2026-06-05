@@ -49,7 +49,7 @@ def get_spdat(adj):
     return [adj, num_adj, isl_reg, num_island, num_island_region, island_id]
 
 # Restricted UCAR Gibbs sampler
-def gibbs_rucar(Y, n, adj, std_pop):
+def gibbs_rucar(Y, n, adj, std_pop, n_iterations):
     np.random.seed(1) # For replicability
     adj, num_adj, isl_reg, num_island, num_island_region, island_id = get_spdat(adj) # Spatial data
     theta, beta, Z, tau2, sig2 = get_inits(Y, n, isl_reg, island_id) # Inits
@@ -60,9 +60,14 @@ def gibbs_rucar(Y, n, adj, std_pop):
     m0 = 3
     A = Y.sum(0) / n.sum(0) * std_pop
     A = 6 * A / sum(A)
-    theta_out = np.zeros([num_region, num_group, 400])
-    if arcpy_available: arcpy.SetProgressor("step", "Generating estimates...", 0, 6000, 1)
-    for s in range(6000):
+
+    burn_in = n_iterations // 3
+    thinning = 10
+    num_samples = (n_iterations - burn_in) // thinning
+
+    theta_out = np.zeros([num_region, num_group, num_samples])
+    if arcpy_available: arcpy.SetProgressor("step", "Generating estimates...", 0, n_iterations, 1)
+    for s in range(n_iterations):
         sig2 = param_updates.sample_sig2(beta, Z, tau2, num_island_region, adj, num_adj, num_region, num_group, num_island, sigma_a, sigma_b, m0, A)
         tau2 = param_updates.sample_tau2(tau2, theta, beta, Z, sig2, island_id, num_island_region, num_region, num_group, num_island, tau_a, tau_b, A, m0)
         beta = param_updates.sample_beta(beta, tau2, theta, Z, sig2, num_island_region, isl_reg, num_group, num_island, A, m0)
@@ -72,10 +77,10 @@ def gibbs_rucar(Y, n, adj, std_pop):
             theta_acpt = np.clip(theta_acpt, 0.20, 0.75)
             theta_sd  *= theta_acpt / 0.43
             theta_acpt *= 0
-        if (s > 2000) & ((s + 1) % 10 == 0):
-            theta_out[:, :, (s - 2000) // 10] = theta
+        if (s > burn_in) & ((s + 1) % thinning == 0):
+            theta_out[:, :, (s - burn_in) // thinning] = theta
         if arcpy_available: arcpy.SetProgressorPosition()
-        print(str(round(s / 6000 * 100, 1)) + "%", end = "\r")
+        print(str(round(s / n_iterations * 100, 1)) + "%", end = "\r")
     print()
     return theta_out
 
