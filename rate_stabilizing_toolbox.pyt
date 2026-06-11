@@ -117,12 +117,10 @@ class RST:
             parameterType="Required",
             direction="Input"
         )
-        params_add.columns = [['Double', 'Credible Level'], ['Long', 'Rate Per'], ['Long', 'Number of Years'], ['String', 'Iteration Length']]
-        params_add.values = [[0.95, 100_000, 1, "Low"]]
+        params_add.columns = [['Double', 'Credible Level'], ['Long', 'Rate Per'], ['Long', 'Number of Years']]
+        params_add.values = [[0.95, 100_000, 1]]
         params_add.filters[0].type = "ValueList"
         params_add.filters[0].list = [0.90, 0.95, 0.99]
-        params_add.filters[3].type = "ValueList"
-        params_add.filters[3].list = ["Low", "Medium", "High"]
         params_add.controlCLSID = '{1A1CA7EC-A47A-4187-A15C-6EDBA4FE0CF7}'
 
         params = [
@@ -194,11 +192,6 @@ class RST:
         feature_fields_name = arcpy_extras.get_valueTableValues(feature_fields)[0]
         feature_region_info = arcpy_extras.get_fieldInfo(feature_url.valueAsText, feature_fields_name[0])
         age_std_groups_vals = arcpy_extras.get_valueTableValues(age_std_groups)
-        additional_opt_vals = arcpy_extras.get_valueTableValues(additional_opt)
-
-        # Tell user high 
-        if additional_opt_vals[3] in ["Medium", "High"]:
-            additional_opt.setWarningMessage("Medium and high iteration settings can take 10+ minutes on large datasets (1,000+ records).")
 
         # Check if all fields are filled in for age standardization
         if data_ageGrp_info.name is None and (std_pop_yr.valueAsText is not None or age_std_groups.valueAsText is not None):
@@ -340,14 +333,7 @@ class RST:
         data_event_name = data_fields_name[1]
         data_pop_name = data_fields_name[2]
         feature_region_name = str(feature_fields.values[0][0])
-        ci_pct, rates_per, n_years, iteration_lvl = additional_opt.values[0]
-        match iteration_lvl:
-            case "Low":
-                n_iterations = 6_000
-            case "Medium":
-                n_iterations = 24_000
-            case "High":
-                n_iterations = 48_000
+        ci_pct, rates_per, n_years = additional_opt.values[0]
 
         # Get the age group distribution
         age_std_groups_arr = []
@@ -416,7 +402,7 @@ class RST:
 
         # Generate estimates
         messages.AddMessage("Generating estimates...")
-        theta_out = model.runner.gibbs_rucar(Y, n, adj, std_pop, n_iterations)
+        theta_out = model.runner.gibbs_rucar(Y, n, adj, std_pop)
         output = model.param_updates.expit(theta_out) * rates_per / n_years
 
         # If age standardized, generate age_groups
